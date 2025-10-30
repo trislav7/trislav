@@ -1,0 +1,185 @@
+s:8483:"<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Акции</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Slick CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <style>
+        .slick-prev:before, .slick-next:before {
+            color: #000;
+        }
+        .banner-slider .slick-dots {
+            bottom: 20px;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Шапка -->
+    <header class="bg-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="text-2xl font-bold text-blue-600">
+                    <a href="/">Рекламное агентство</a>
+                </div>
+                
+                <nav class="hidden md:flex space-x-6">
+                    <a href="/" class="text-gray-700 hover:text-blue-600 font-medium">Главная</a>
+                    <a href="/news" class="text-gray-700 hover:text-blue-600 font-medium">Новости</a>
+                    <a href="/actions" class="text-gray-700 hover:text-blue-600 font-medium">Акции</a>
+                    <a href="/admin" class="text-gray-700 hover:text-blue-600 font-medium">Админка</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Основной контент -->
+            <main class="lg:w-3/4">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">Акции</h1>
+    <p class="text-gray-600">Специальные предложения и акции нашего агентства</p>
+</div>
+
+    <div class="bg-white rounded-lg shadow-md p-8 text-center">
+        <p class="text-gray-500 text-lg">Акции не найдены</p>
+        <p class="text-gray-400 text-sm mt-2">Возможно, все акции завершились или новые еще не добавлены</p>
+        <a href="/actions" class="inline-block mt-4 bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600">
+            Вернуться к списку акций
+        </a>
+    </div>
+            </main>
+            
+            <!-- Боковое меню -->
+            <aside class="lg:w-1/4">
+                <div class="space-y-6">
+    <!-- Категории новостей -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Категории новостей</h3>
+        <ul class="space-y-2">
+                                            <li>
+                    <a href="/news/category/1" 
+                       class="text-gray-600 hover:text-blue-600 flex items-center py-2 px-3 rounded hover:bg-blue-50 transition-colors">
+                        <span class="w-2 h-2 bg-blue-600 rounded-full mr-3"></span>
+                        Общие новости                    </a>
+                </li>
+                                <li>
+                    <a href="/news/category/3" 
+                       class="text-gray-600 hover:text-blue-600 flex items-center py-2 px-3 rounded hover:bg-blue-50 transition-colors">
+                        <span class="w-2 h-2 bg-blue-600 rounded-full mr-3"></span>
+                        Партнеры                    </a>
+                </li>
+                                <li>
+                    <a href="/news/category/2" 
+                       class="text-gray-600 hover:text-blue-600 flex items-center py-2 px-3 rounded hover:bg-blue-50 transition-colors">
+                        <span class="w-2 h-2 bg-blue-600 rounded-full mr-3"></span>
+                        События                    </a>
+                </li>
+                                    </ul>
+    </div>
+
+    <!-- Категории акций -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Категории акций</h3>
+        <ul class="space-y-2">
+                                            <li>
+                    <a href="/actions/category/6" 
+                       class="text-gray-600 hover:text-yellow-600 flex items-center py-2 px-3 rounded hover:bg-yellow-50 transition-colors">
+                        <span class="w-2 h-2 bg-yellow-500 rounded-full mr-3"></span>
+                        Новинки                    </a>
+                </li>
+                                <li>
+                    <a href="/actions/category/4" 
+                       class="text-gray-600 hover:text-yellow-600 flex items-center py-2 px-3 rounded hover:bg-yellow-50 transition-colors">
+                        <span class="w-2 h-2 bg-yellow-500 rounded-full mr-3"></span>
+                        Скидки                    </a>
+                </li>
+                                <li>
+                    <a href="/actions/category/5" 
+                       class="text-gray-600 hover:text-yellow-600 flex items-center py-2 px-3 rounded hover:bg-yellow-50 transition-colors">
+                        <span class="w-2 h-2 bg-yellow-500 rounded-full mr-3"></span>
+                        Спецпредложения                    </a>
+                </li>
+                                    </ul>
+    </div>
+
+    <!-- Рекламный блок -->
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-center text-white">
+        <h4 class="font-bold text-lg mb-2">Специальное предложение!</h4>
+        <p class="text-blue-100 text-sm mb-4">Получите скидку 15% на первую рекламную кампанию</p>
+        <button class="bg-white text-blue-600 px-6 py-2 rounded-lg hover:bg-blue-50 font-medium transition-colors">
+            Получить скидку
+        </button>
+    </div>
+
+    <!-- Контакты -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Контакты</h3>
+        <div class="space-y-3 text-sm">
+            <p class="flex items-center text-gray-600">
+                📞 +7 (999) 123-45-67
+            </p>
+            <p class="flex items-center text-gray-600">
+                ✉️ info@agency.ru
+            </p>
+            <p class="flex items-center text-gray-600">
+                📍 г. Москва, ул. Примерная, 123
+            </p>
+        </div>
+    </div>
+</div>            </aside>
+        </div>
+    </div>
+
+    <!-- Подвал -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 Рекламное агентство. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <!-- Slick JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+    
+    <script>
+        $(document).ready(function(){
+            // Инициализация слайдера только если есть баннеры
+            if ($('.banner-slider').length > 0) {
+                $('.banner-slider').slick({
+                    dots: true,
+                    arrows: true,
+                    infinite: true,
+                    speed: 500,
+                    slidesToShow: 1,
+                    slidesToScroll: 1,
+                    autoplay: true,
+                    autoplaySpeed: 4000
+                });
+            }
+        });
+    </script>
+</body>
+</html>";

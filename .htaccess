@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Разрешаем прямые запросы к файлам и папкам
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule . - [L]
+    
+    # Все остальное на index.php
+    RewriteRule . index.php [L]
+</IfModule>
