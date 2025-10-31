@@ -94,6 +94,10 @@
                 <i class="fas fa-envelope w-5 mr-3"></i>
                 Заявки
             </a>
+            <a href="/admin.php?action=trislav_content" class="flex items-center py-3 px-4 text-light hover:bg-highlight/20 hover:text-highlight rounded-lg transition-all duration-300 <?= (strpos(($current_action ?? ''), 'trislav') === 0) ? 'active-menu' : '' ?>">
+                <i class="fas fa-building w-5 mr-3"></i>
+                Трислав Групп
+            </a>
         </nav>
     </aside>
 

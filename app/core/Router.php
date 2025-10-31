@@ -88,26 +88,61 @@ class Router {
         $pattern = preg_replace('/\{([a-z]+)\}/', '(?P<$1>[^/]+)', $path);
         return '#^' . $pattern . '$#';
     }
-    
+
     private function handleNotFound() {
         http_response_code(404);
-        
-        if (isset($_GET['debug'])) {
-            echo "<pre style='background: #ffeb3b; padding: 10px; margin: 10px 0;'>";
-            echo "Маршрут не найден для: " . $_SERVER['REQUEST_URI'] . "\n";
-            echo "Доступные маршруты:\n";
-            foreach ($this->routes as $route) {
-                echo $route['method'] . ' ' . $route['path'] . ' -> ' . $route['handler'] . "\n";
-            }
-            echo "</pre>";
-        }
-        
-        // Пробуем показать красивую 404 страницу
-        if (file_exists(ROOT_PATH . '/app/views/errors/404.php')) {
-            include ROOT_PATH . '/app/views/errors/404.php';
+
+        // Показываем красивую 404 страницу из отдельного файла
+        $errorPage = ROOT_PATH . '/app/views/errors/not_found.php';
+        if (file_exists($errorPage)) {
+            include $errorPage;
         } else {
-            echo "<h1>404 - Страница не найдена</h1>";
-            echo "<p>Запрошенная страница не существует: " . $_SERVER['REQUEST_URI'] . "</p>";
+            // Фолбэк на минимальную 404 страницу
+            $this->showMinimal404();
         }
+    }
+
+    private function showMinimal404() {
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <title>404 - Страница не найдена</title>
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    background: #1a1a2e; 
+                    color: #f1f1f1; 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    min-height: 100vh; 
+                    margin: 0; 
+                }
+                .container { 
+                    text-align: center; 
+                    padding: 2rem; 
+                }
+                h1 { 
+                    color: #00b7c2; 
+                    font-size: 4rem; 
+                    margin: 0; 
+                }
+                a { 
+                    color: #00b7c2; 
+                    text-decoration: none; 
+                }
+                a:hover { 
+                    text-decoration: underline; 
+                }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <h1>404</h1>
+                <p>Страница не найдена</p>
+                <p><a href='/'>Вернуться на главную</a></p>
+            </div>
+        </body>
+        </html>";
     }
 }

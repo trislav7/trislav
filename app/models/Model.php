@@ -43,6 +43,13 @@ class Model {
         );
     }
 
+    public function delete($id) {
+        return $this->db->query(
+            "DELETE FROM {$this->table} WHERE id = ?",
+            [$id]
+        );
+    }
+
     public function where($conditions, $params = []) {
         $whereClause = implode(' AND ', array_map(function($col) {
             return "$col = ?";

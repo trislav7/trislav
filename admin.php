@@ -51,6 +51,10 @@ if (strpos($action, 'services_') === 0) {
 } elseif (strpos($action, 'categories_') === 0) {
     $controller = new AdminCategoriesController();
     $method = str_replace('categories_', '', $action);
+} elseif (strpos($action, 'trislav_') === 0) {
+    // ДОБАВЛЯЕМ ОБРАБОТКУ ДЛЯ ТРИСЛАВ ГРУПП
+    $controller = new AdminTrislavGroupController();
+    $method = str_replace('trislav_', '', $action);
 } else {
     $controller = new AdminAuthController();
     $method = $action;
@@ -60,7 +64,15 @@ if (strpos($action, 'services_') === 0) {
 if (method_exists($controller, $method)) {
     $controller->$method();
 } else {
-    echo "<h1>Ошибка 404</h1>";
-    echo "<p>Действие не найдено: $action</p>";
-    echo "<p><a href='/admin.php'>На главную админки</a></p>";
+    // Показываем красивую 404 для админки через тот же файл
+    $errorPage = ROOT_PATH . '/app/views/errors/not_found.php';
+    if (file_exists($errorPage)) {
+        include $errorPage;
+    } else {
+        echo "<h1>Ошибка 404</h1>";
+        echo "<p>Действие не найдено: $action</p>";
+        echo "<p>Контроллер: " . get_class($controller) . "</p>";
+        echo "<p>Метод: $method</p>";
+        echo "<p><a href='/admin.php'>На главную админки</a></p>";
+    }
 }
