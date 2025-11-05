@@ -58,24 +58,6 @@ if (IS_TRISLAV_MEDIA) {
     $router->add('POST', '/contact/submit', 'TrislavGroupController@contactSubmit');
 }
 
-//// Админ-маршруты (добавляем в обе секции - и для медиа и для группы)
-//$router->add('GET', '/admin/services', 'AdminServicesController@index');
-//$router->add('GET', '/admin/services/create', 'AdminServicesController@create');
-//$router->add('POST', '/admin/services/create', 'AdminServicesController@create');
-//$router->add('GET', '/admin/services/edit/{id}', 'AdminServicesController@edit');
-//$router->add('POST', '/admin/services/edit/{id}', 'AdminServicesController@edit');
-//
-//$router->add('GET', '/admin/tariffs', 'AdminTariffsController@index');
-//$router->add('GET', '/admin/portfolio', 'AdminPortfolioController@index');
-//$router->add('GET', '/admin/leads', 'AdminLeadsController@index');
-//
-//// ДОБАВЛЯЕМ МАРШРУТЫ ДЛЯ ТРИСЛАВ ГРУПП
-//$router->add('GET', '/admin/trislav-content', 'AdminTrislavGroupController@content');
-//$router->add('GET', '/admin/trislav-projects', 'AdminTrislavGroupController@projects');
-//$router->add('GET', '/admin/trislav-clients', 'AdminTrislavGroupController@clients');
-//$router->add('GET', '/admin/trislav-reviews', 'AdminTrislavGroupController@reviews');
-//$router->add('GET', '/admin/trislav-advantages', 'AdminTrislavGroupController@advantages');
-
 // Добавляем после существующих маршрутов
 $router->add('GET', '/privacy-policy', 'TrislavGroupController@privacyPolicy');
 

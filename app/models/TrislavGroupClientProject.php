@@ -44,7 +44,6 @@ class TrislavGroupClientProject extends Model {
         );
     }
 
-
     /**
      * Получить все связки клиента
      */
@@ -109,11 +108,9 @@ class TrislavGroupClientProject extends Model {
     }
 
     public function getByShoppingCenter($shoppingCenterId) {
-
         try {
             // Используем правильное имя таблицы - БЕЗ 's' на конце
             $tableName = 'trislav_group_client_project';
-
 
             // Правильный запрос с существующими полями
             $result = $this->db->fetchAll("
@@ -123,12 +120,6 @@ class TrislavGroupClientProject extends Model {
                 AND (video_filename IS NOT NULL OR yandex_disk_path IS NOT NULL)
                 ORDER BY id
             ", [$shoppingCenterId]);
-
-
-            // Отладочная информация о найденных видео
-            foreach ($result as $item) {
-                    ", yandex_path: " . ($item['yandex_disk_path'] ?? 'null'));
-            }
 
             return $result;
 

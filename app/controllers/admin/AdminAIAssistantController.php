@@ -119,8 +119,6 @@ class AdminAIAssistantController extends AdminBaseController {
         $prompt .= "**ПРИМЕЧАНИЕ:** Показаны только основные файлы системы. Если нужны конкретные файлы - уточните какие.\n\n";
         $prompt .= "**Отвечай учитывая архитектуру проекта. Предлагай решения в рамках существующей структуры.**";
 
-        //debug_log("Final prompt size: " . strlen($prompt));
-
         return $prompt;
     }
 

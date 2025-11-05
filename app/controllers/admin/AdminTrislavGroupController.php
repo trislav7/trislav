@@ -730,6 +730,7 @@ class AdminTrislavGroupController extends AdminBaseController {
         }
     }
     public function download_shopping_center_videos() {
+
         $shoppingCenterId = $_GET['shopping_center_id'] ?? null;
         if (!$shoppingCenterId) {
             header('Location: /admin.php?action=trislav_shopping_centers&error=no_id');
@@ -804,7 +805,7 @@ class AdminTrislavGroupController extends AdminBaseController {
 
             // ДОБАВЛЯЕМ ЗАГЛУШКИ ДЛЯ ПРОПУЩЕННЫХ СЛОТОВ
             // Создаем полный набор файлов от 00001 до максимального номера
-            $maxSlots = 50; // Максимальное количество слотов
+            $maxSlots = 48; // Максимальное количество слотов
             $fullVideoFiles = [];
 
             for ($i = 1; $i <= $maxSlots; $i++) {
@@ -836,14 +837,20 @@ class AdminTrislavGroupController extends AdminBaseController {
             if (!empty($fullVideoFiles)) {
                 $archivePath = $this->createNumberedArchive($fullVideoFiles, $tempDir, $shoppingCenter['title']);
 
+                // Отправляем архив
                 $this->sendArchiveForDownload($archivePath, $shoppingCenter['title']);
+
+
+                // Очищаем временные файлы ПОСЛЕ отправки архива
+                $this->cleanupTempFiles($tempDir);
+
+
+                // Выходим после очистки
+                exit;
             } else {
                 header('Location: /admin.php?action=trislav_shopping_centers&error=no_videos_found');
                 exit;
             }
-
-            // Очищаем временные файлы
-            $this->cleanupTempFiles($tempDir);
 
         } catch (Exception $e) {
             header('Location: /admin.php?action=trislav_shopping_centers&error=download_failed');
@@ -953,28 +960,38 @@ class AdminTrislavGroupController extends AdminBaseController {
         header('Pragma: public');
         header('Content-Length: ' . filesize($archivePath));
 
+        // Читаем и отправляем файл
         readfile($archivePath);
-        exit;
+
+
+        // НЕ ВЫХОДИМ здесь, чтобы выполнилась очистка
     }
 
     /**
      * Очищает временные файлы
      */
+    /**
+     * Очищает временные файлы включая архив
+     */
     private function cleanupTempFiles($tempDir) {
-        // Файлы будут удалены после завершения скрипта
-        register_shutdown_function(function() use ($tempDir) {
-            if (is_dir($tempDir)) {
-                $files = glob($tempDir . '/*');
-                foreach ($files as $file) {
-                    if (is_file($file)) {
-                        @unlink($file);
+
+        if (is_dir($tempDir)) {
+            $files = glob($tempDir . '/*');
+            foreach ($files as $file) {
+                if (is_file($file)) {
+                    if (unlink($file)) {
+                    } else {
                     }
                 }
-                @rmdir($tempDir);
             }
-        });
-    }
 
+            // Удаляем саму папку
+            if (rmdir($tempDir)) {
+            } else {
+            }
+        } else {
+        }
+    }
     /**
      * Скачивает видео по URL
      */
