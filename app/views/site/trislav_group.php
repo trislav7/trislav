@@ -6,16 +6,11 @@ ob_start();
     <!-- Первый блок - Логотип и название (уменьшенный) -->
     <section class="pt-24 pb-16 flex items-center justify-center bg-gradient-to-br from-secondary to-primary px-4">
         <div class="container mx-auto max-w-4xl text-center">
-            <div class="flex justify-center mb-6">
-                <div class="w-20 h-20 bg-gradient-to-br from-accent to-highlight rounded-xl flex items-center justify-center">
-                    <div class="flex space-x-1">
-                        <div class="w-2.5 h-2.5 bg-white rounded-full opacity-80"></div>
-                        <div class="w-2.5 h-2.5 bg-white rounded-full opacity-80"></div>
-                        <div class="w-2.5 h-2.5 bg-white rounded-full opacity-80"></div>
-                    </div>
+            <div class="flex justify-center mb-20">
+                <div class="w-64 h-64 from-accent to-highlight rounded-xl flex items-center justify-center">
+                    <img src="/images/tg_.png" />
                 </div>
             </div>
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">ТРИСЛАВ ГРУПП</h1>
             <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
                 Комплексные решения для развития бизнеса через инновационные подходы и креативные стратегии
             </p>
@@ -34,7 +29,7 @@ ob_start();
                 <!-- Проект 1 - Медиа групп -->
                 <div id="media" class="project-card bg-white/5 rounded-xl overflow-hidden">
                     <div class="h-40 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                        <img src="/images/tm.png"
                              alt="Трислав Медиа"
                              class="w-full h-full object-cover">
                     </div>
@@ -52,7 +47,7 @@ ob_start();
                 <!-- Проект 2 - Молодёжная карта -->
                 <div id="card" class="project-card bg-white/5 rounded-xl overflow-hidden">
                     <div class="h-40 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1551833996-8c8c43c8d134?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                        <img src="/images/mkt.png"
                              alt="Молодёжная карта"
                              class="w-full h-full object-cover">
                     </div>
@@ -70,7 +65,7 @@ ob_start();
                 <!-- Проект 3 - Народная реклама -->
                 <div id="ad" class="project-card bg-white/5 rounded-xl overflow-hidden">
                     <div class="h-40 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1551833996-8c8c43c8d134?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                        <img src="/images/nr.png"
                              alt="Народная реклама"
                              class="w-full h-full object-cover">
                     </div>
@@ -334,6 +329,18 @@ ob_start();
                         <textarea id="message" rows="4"
                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight"
                                   placeholder="Расскажите о вашем бизнесе и задачах..."></textarea>
+                    </div>
+                    <div class="form-group privacy-agreement mt-4 mb-6">
+                        <label class="checkbox-label flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" name="privacy_agreement" required
+                                   class="mt-1 w-4 h-4 text-highlight bg-primary border-highlight/30 rounded focus:ring-highlight focus:ring-2">
+                            <span class="text-light text-sm">
+                                Я соглашаюсь с
+                                <a href="/privacy-policy" target="_blank" class="text-highlight hover:underline">
+                                    политикой обработки персональных данных
+                                </a>
+                            </span>
+                        </label>
                     </div>
                     <button type="submit" class="w-full bg-highlight text-primary font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:bg-transparent hover:text-highlight border-2 border-highlight">
                         Отправить заявку

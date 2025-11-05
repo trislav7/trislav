@@ -1,9 +1,9 @@
 <?php
 class AdminAuthController extends Controller {
 
-    public function __construct() {
-        // Конструктор пустой, сессия запускается в admin.php
-    }
+//    public function __construct() {
+//        // Конструктор пустой, сессия запускается в admin.php
+//    }
 
     public function login() {
         // Если уже авторизован - редирект в админку

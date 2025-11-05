@@ -1,20 +1,18 @@
 <?php
+error_log("AdminTrislavGroupController loaded");
 class AdminTrislavGroupController extends AdminBaseController {
 
-    private $contentModel;
-
-    public function __construct() {
-        parent::__construct();
-        $this->contentModel = new TrislavGroupContent();
-    }
-
     public function content() {
+        $clientModel = new TrislavGroupClient();
+        $reviewModel = new TrislavGroupReview();
+        $advantageModel = new TrislavGroupAdvantage();
+        $projectModel = new TrislavGroupProject();
+
         $data = [
-            'slides' => $this->contentModel->getAllByType('slide'),
-            'reviews' => $this->contentModel->getAllByType('review'),
-            'advantages' => $this->contentModel->getAllByType('advantage'),
-            'clients' => $this->contentModel->getAllByType('client'),
-            'projects' => $this->contentModel->getAllByType('project'),
+            'clients' => $clientModel->getAll(),
+            'reviews' => $reviewModel->getAll(),
+            'advantages' => $advantageModel->getAll(),
+            'projects' => $projectModel->getAll(),
             'title' => 'Управление контентом Трислав Групп',
             'current_action' => 'trislav_content'
         ];
@@ -24,7 +22,8 @@ class AdminTrislavGroupController extends AdminBaseController {
 
     // КЛИЕНТЫ
     public function clients() {
-        $clients = $this->contentModel->getAllByType('client');
+        $clientModel = new TrislavGroupClient();
+        $clients = $clientModel->getAll();
 
         $this->view('admin/trislav_group_clients', [
             'title' => 'Управление клиентами Трислав Групп',
@@ -34,40 +33,120 @@ class AdminTrislavGroupController extends AdminBaseController {
     }
 
     public function clients_create() {
+        $projectModel = new TrislavGroupProject();
+        $serviceModel = new Service();
+        $shoppingCenterModel = new ShoppingCenter();
+        $tariffModel = new Tariff();
+
+        $projects = $projectModel->getAllActive();
+        $services = $serviceModel->getAllActive();
+        $shoppingCenters = $shoppingCenterModel->getAllActive();
+        $tariffs = $tariffModel->getActive();
+
         if ($_POST) {
+            $clientModel = new TrislavGroupClient();
+            $connectionModel = new TrislavGroupClientProject();
+
+            // Обработка загрузки изображения
+            $imagePath = '';
+            if ($_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $imagePath = $clientModel->handleImageUpload($_FILES['image']);
+            }
+
+            // Создаем клиента
             $data = [
-                'type' => 'client',
                 'title' => $_POST['title'] ?? '',
                 'description' => $_POST['description'] ?? '',
-                'image_url' => $_POST['image_url'] ?? '',
+                'image_url' => $imagePath,
                 'order_index' => $_POST['order_index'] ?? 0,
-                'is_active' => isset($_POST['is_active']) ? 1 : 0,
-                'created_at' => date('Y-m-d H:i:s')
+                'is_active' => isset($_POST['is_active']) ? 1 : 0
             ];
 
-            $id = $this->contentModel->create($data);
-            if ($id) {
-                header('Location: /admin.php?action=trislav_clients&success=1');
-                exit;
+            $clientId = $clientModel->create($data);
+
+            // 1. Сначала сохраняем связи БЕЗ видео (быстрая операция)
+            if (!empty($_POST['connections']) && is_array($_POST['connections'])) {
+                foreach ($_POST['connections'] as $index => $connection) {
+                    if (!empty($connection['project_id'])) {
+                        $videoUrl = $connection['video_url'] ?? null;
+
+                        // Пока сохраняем без файлового видео
+                        $connectionId = $connectionModel->addConnection(
+                            $clientId,
+                            $connection['project_id'],
+                            $connection['service_id'] ?? null,
+                            $connection['shopping_center_id'] ?? null,
+                            $connection['tariff_id'] ?? null,
+                            $videoUrl,
+                            null, // video_filename - пока null
+                            null  // yandex_disk_path - пока null
+                        );
+                    }
+                }
             }
+
+            // 2. ТЕПЕРЬ обрабатываем загрузку видео файлов (долгая операция)
+            if (!empty($_POST['connections']) && is_array($_POST['connections'])) {
+                foreach ($_POST['connections'] as $index => $connection) {
+                    if (!empty($_FILES['connections']['name'][$index]['video_file'])) {
+                        $videoFile = [
+                            'name' => $_FILES['connections']['name'][$index]['video_file'],
+                            'type' => $_FILES['connections']['type'][$index]['video_file'],
+                            'tmp_name' => $_FILES['connections']['tmp_name'][$index]['video_file'],
+                            'error' => $_FILES['connections']['error'][$index]['video_file'],
+                            'size' => $_FILES['connections']['size'][$index]['video_file']
+                        ];
+
+                        $videoResult = $this->handleVideoUpload($videoFile, $connection['shopping_center_id'] ?? null);
+
+                        if ($videoResult) {
+                            // Обновляем связь с информацией о видео
+                            $this->updateConnectionWithVideo(
+                                $clientId,
+                                $connection['project_id'],
+                                $videoResult['filename'],
+                                $videoResult['disk_path']
+                            );
+                        }
+                    }
+                }
+            }
+
+            header('Location: /admin.php?action=trislav_clients&success=1');
+            exit;
         }
 
         $this->view('admin/trislav_group_clients_form', [
             'title' => 'Добавить клиента',
             'current_action' => 'trislav_clients',
-            'item' => null
+            'item' => null,
+            'projects' => $projects,
+            'services' => $services,
+            'shoppingCenters' => $shoppingCenters,
+            'tariffs' => $tariffs,
+            'connections' => []
         ]);
     }
 
     public function clients_edit() {
         $id = $_GET['id'] ?? null;
-
         if (!$id) {
             header('Location: /admin.php?action=trislav_clients');
             exit;
         }
 
-        $item = $this->contentModel->find($id);
+        $clientModel = new TrislavGroupClient();
+        $projectModel = new TrislavGroupProject();
+        $serviceModel = new Service();
+        $shoppingCenterModel = new ShoppingCenter();
+        $tariffModel = new Tariff();
+
+        $item = $clientModel->findWithDetails($id);
+        $projects = $projectModel->getAllActive();
+        $services = $serviceModel->getAllActive();
+        $shoppingCenters = $shoppingCenterModel->getAllActive();
+        $tariffs = $tariffModel->getActive();
+        $connections = $item['connections'] ?? [];
 
         if (!$item) {
             header('Location: /admin.php?action=trislav_clients&error=1');
@@ -75,52 +154,132 @@ class AdminTrislavGroupController extends AdminBaseController {
         }
 
         if ($_POST) {
+            // Сохраняем существующие связи для проверки видео
+            $connectionModel = new TrislavGroupClientProject();
+            $existingConnections = $connectionModel->getByClient($id);
+
             $data = [
                 'title' => $_POST['title'] ?? '',
                 'description' => $_POST['description'] ?? '',
-                'image_url' => $_POST['image_url'] ?? '',
                 'order_index' => $_POST['order_index'] ?? 0,
                 'is_active' => isset($_POST['is_active']) ? 1 : 0
             ];
 
-            if ($this->contentModel->update($id, $data)) {
-                header('Location: /admin.php?action=trislav_clients&success=1');
-                exit;
+            // Если загружено новое изображение
+            if ($_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $data['image_url'] = $clientModel->handleImageUpload($_FILES['image']);
+
+                // Удаляем старое изображение если есть
+                if (!empty($item['image_url'])) {
+                    $clientModel->deleteOldImage($item['image_url']);
+                }
             }
+
+            $clientModel->update($id, $data);
+
+            // 1. Сначала удаляем старые связи (быстрая операция)
+            $connectionModel->removeByClient($id);
+
+            // 2. Сохраняем новые связи БЕЗ видео (быстрая операция)
+            if (!empty($_POST['connections']) && is_array($_POST['connections'])) {
+                foreach ($_POST['connections'] as $index => $connection) {
+                    if (!empty($connection['project_id'])) {
+                        $videoUrl = $connection['video_url'] ?? null;
+                        $videoFilename = null;
+                        $yandexDiskPath = null;
+
+                        // Проверяем нужно ли удалить существующее видео
+                        $removeVideo = !empty($connection['remove_video']);
+
+                        // Если не удаляем и есть существующее видео - сохраняем его
+                        if (!$removeVideo && isset($existingConnections[$index])) {
+                            $existing = $existingConnections[$index];
+                            $videoFilename = $existing['video_filename'] ?? null;
+                            $yandexDiskPath = $existing['yandex_disk_path'] ?? null;
+                        }
+
+                        // Пока сохраняем без обработки новых файлов
+                        $connectionId = $connectionModel->addConnection(
+                            $id,
+                            $connection['project_id'],
+                            $connection['service_id'] ?? null,
+                            $connection['shopping_center_id'] ?? null,
+                            $connection['tariff_id'] ?? null,
+                            $videoUrl,
+                            $videoFilename,
+                            $yandexDiskPath
+                        );
+                    }
+                }
+            }
+
+            // 3. ТЕПЕРЬ обрабатываем загрузку НОВЫХ видео файлов (долгая операция)
+            if (!empty($_POST['connections']) && is_array($_POST['connections'])) {
+                foreach ($_POST['connections'] as $index => $connection) {
+                    if (!empty($_FILES['connections']['name'][$index]['video_file'])) {
+                        $videoFile = [
+                            'name' => $_FILES['connections']['name'][$index]['video_file'],
+                            'type' => $_FILES['connections']['type'][$index]['video_file'],
+                            'tmp_name' => $_FILES['connections']['tmp_name'][$index]['video_file'],
+                            'error' => $_FILES['connections']['error'][$index]['video_file'],
+                            'size' => $_FILES['connections']['size'][$index]['video_file']
+                        ];
+
+                        $videoResult = $this->handleVideoUpload($videoFile, $connection['shopping_center_id'] ?? null);
+
+                        if ($videoResult) {
+                            // Обновляем связь с информацией о видео
+                            $this->updateConnectionWithVideo(
+                                $id,
+                                $connection['project_id'],
+                                $videoResult['filename'],
+                                $videoResult['disk_path']
+                            );
+                        }
+                    }
+                }
+            }
+
+            header('Location: /admin.php?action=trislav_clients&success=1');
+            exit;
         }
 
         $this->view('admin/trislav_group_clients_form', [
             'title' => 'Редактировать клиента',
             'current_action' => 'trislav_clients',
-            'item' => $item
+            'item' => $item,
+            'projects' => $projects,
+            'services' => $services,
+            'shoppingCenters' => $shoppingCenters,
+            'tariffs' => $tariffs,
+            'connections' => $connections
         ]);
     }
 
     public function clients_toggle() {
         $id = $_GET['id'] ?? null;
-
         if ($id) {
-            $this->contentModel->toggleStatus($id);
+            $clientModel = new TrislavGroupClient();
+            $clientModel->toggleStatus($id);
         }
-
         header('Location: /admin.php?action=trislav_clients');
         exit;
     }
 
     public function clients_delete() {
         $id = $_GET['id'] ?? null;
-
         if ($id) {
-            $this->contentModel->delete($id);
+            $clientModel = new TrislavGroupClient();
+            $clientModel->delete($id);
         }
-
         header('Location: /admin.php?action=trislav_clients&success=1');
         exit;
     }
 
     // ОТЗЫВЫ
     public function reviews() {
-        $reviews = $this->contentModel->getAllByType('review');
+        $reviewModel = new TrislavGroupReview();
+        $reviews = $reviewModel->getAll();
 
         $this->view('admin/trislav_group_reviews', [
             'title' => 'Управление отзывами Трислав Групп',
@@ -131,18 +290,17 @@ class AdminTrislavGroupController extends AdminBaseController {
 
     public function reviews_create() {
         if ($_POST) {
+            $reviewModel = new TrislavGroupReview();
             $data = [
-                'type' => 'review',
-                'title' => $_POST['author_name'] ?? '',
-                'description' => $_POST['content'] ?? '',
+                'author_name' => $_POST['author_name'] ?? '',
                 'author_position' => $_POST['author_position'] ?? '',
-                'image_url' => $_POST['author_avatar'] ?? '',
+                'content' => $_POST['content'] ?? '',
+                'author_avatar' => $_POST['author_avatar'] ?? '',
                 'order_index' => $_POST['order_index'] ?? 0,
-                'is_active' => isset($_POST['is_active']) ? 1 : 0,
-                'created_at' => date('Y-m-d H:i:s')
+                'is_active' => isset($_POST['is_active']) ? 1 : 0
             ];
 
-            $id = $this->contentModel->create($data);
+            $id = $reviewModel->create($data);
             if ($id) {
                 header('Location: /admin.php?action=trislav_reviews&success=1');
                 exit;
@@ -158,13 +316,13 @@ class AdminTrislavGroupController extends AdminBaseController {
 
     public function reviews_edit() {
         $id = $_GET['id'] ?? null;
-
         if (!$id) {
             header('Location: /admin.php?action=trislav_reviews');
             exit;
         }
 
-        $item = $this->contentModel->find($id);
+        $reviewModel = new TrislavGroupReview();
+        $item = $reviewModel->find($id);
 
         if (!$item) {
             header('Location: /admin.php?action=trislav_reviews&error=1');
@@ -173,15 +331,15 @@ class AdminTrislavGroupController extends AdminBaseController {
 
         if ($_POST) {
             $data = [
-                'title' => $_POST['author_name'] ?? '',
-                'description' => $_POST['content'] ?? '',
+                'author_name' => $_POST['author_name'] ?? '',
                 'author_position' => $_POST['author_position'] ?? '',
-                'image_url' => $_POST['author_avatar'] ?? '',
+                'content' => $_POST['content'] ?? '',
+                'author_avatar' => $_POST['author_avatar'] ?? '',
                 'order_index' => $_POST['order_index'] ?? 0,
                 'is_active' => isset($_POST['is_active']) ? 1 : 0
             ];
 
-            if ($this->contentModel->update($id, $data)) {
+            if ($reviewModel->update($id, $data)) {
                 header('Location: /admin.php?action=trislav_reviews&success=1');
                 exit;
             }
@@ -196,18 +354,18 @@ class AdminTrislavGroupController extends AdminBaseController {
 
     public function reviews_toggle() {
         $id = $_GET['id'] ?? null;
-
         if ($id) {
-            $this->contentModel->toggleStatus($id);
+            $reviewModel = new TrislavGroupReview();
+            $reviewModel->toggleStatus($id);
         }
-
         header('Location: /admin.php?action=trislav_reviews');
         exit;
     }
 
     // ПРЕИМУЩЕСТВА
     public function advantages() {
-        $advantages = $this->contentModel->getAllByType('advantage');
+        $advantageModel = new TrislavGroupAdvantage();
+        $advantages = $advantageModel->getAll();
 
         $this->view('admin/trislav_group_advantages', [
             'title' => 'Управление преимуществами Трислав Групп',
@@ -218,17 +376,16 @@ class AdminTrislavGroupController extends AdminBaseController {
 
     public function advantages_create() {
         if ($_POST) {
+            $advantageModel = new TrislavGroupAdvantage();
             $data = [
-                'type' => 'advantage',
                 'title' => $_POST['title'] ?? '',
                 'description' => $_POST['description'] ?? '',
                 'icon_class' => $_POST['icon_class'] ?? '',
                 'order_index' => $_POST['order_index'] ?? 0,
-                'is_active' => isset($_POST['is_active']) ? 1 : 0,
-                'created_at' => date('Y-m-d H:i:s')
+                'is_active' => isset($_POST['is_active']) ? 1 : 0
             ];
 
-            $id = $this->contentModel->create($data);
+            $id = $advantageModel->create($data);
             if ($id) {
                 header('Location: /admin.php?action=trislav_advantages&success=1');
                 exit;
@@ -244,13 +401,13 @@ class AdminTrislavGroupController extends AdminBaseController {
 
     public function advantages_edit() {
         $id = $_GET['id'] ?? null;
-
         if (!$id) {
             header('Location: /admin.php?action=trislav_advantages');
             exit;
         }
 
-        $item = $this->contentModel->find($id);
+        $advantageModel = new TrislavGroupAdvantage();
+        $item = $advantageModel->find($id);
 
         if (!$item) {
             header('Location: /admin.php?action=trislav_advantages&error=1');
@@ -266,7 +423,7 @@ class AdminTrislavGroupController extends AdminBaseController {
                 'is_active' => isset($_POST['is_active']) ? 1 : 0
             ];
 
-            if ($this->contentModel->update($id, $data)) {
+            if ($advantageModel->update($id, $data)) {
                 header('Location: /admin.php?action=trislav_advantages&success=1');
                 exit;
             }
@@ -281,18 +438,18 @@ class AdminTrislavGroupController extends AdminBaseController {
 
     public function advantages_toggle() {
         $id = $_GET['id'] ?? null;
-
         if ($id) {
-            $this->contentModel->toggleStatus($id);
+            $advantageModel = new TrislavGroupAdvantage();
+            $advantageModel->toggleStatus($id);
         }
-
         header('Location: /admin.php?action=trislav_advantages');
         exit;
     }
 
     // ПРОЕКТЫ
     public function projects() {
-        $projects = $this->contentModel->getAllByType('project');
+        $projectModel = new TrislavGroupProject();
+        $projects = $projectModel->getAll();
 
         $this->view('admin/trislav_group_projects', [
             'title' => 'Управление проектами Трислав Групп',
@@ -303,19 +460,18 @@ class AdminTrislavGroupController extends AdminBaseController {
 
     public function projects_create() {
         if ($_POST) {
+            $projectModel = new TrislavGroupProject();
             $data = [
-                'type' => 'project',
                 'title' => $_POST['title'] ?? '',
                 'description' => $_POST['description'] ?? '',
                 'image_url' => $_POST['image_url'] ?? '',
                 'project_url' => $_POST['project_url'] ?? '',
                 'tags' => $_POST['tags'] ?? '',
                 'order_index' => $_POST['order_index'] ?? 0,
-                'is_active' => isset($_POST['is_active']) ? 1 : 0,
-                'created_at' => date('Y-m-d H:i:s')
+                'is_active' => isset($_POST['is_active']) ? 1 : 0
             ];
 
-            $id = $this->contentModel->create($data);
+            $id = $projectModel->create($data);
             if ($id) {
                 header('Location: /admin.php?action=trislav_projects&success=1');
                 exit;
@@ -331,13 +487,13 @@ class AdminTrislavGroupController extends AdminBaseController {
 
     public function projects_edit() {
         $id = $_GET['id'] ?? null;
-
         if (!$id) {
             header('Location: /admin.php?action=trislav_projects');
             exit;
         }
 
-        $item = $this->contentModel->find($id);
+        $projectModel = new TrislavGroupProject();
+        $item = $projectModel->find($id);
 
         if (!$item) {
             header('Location: /admin.php?action=trislav_projects&error=1');
@@ -355,7 +511,7 @@ class AdminTrislavGroupController extends AdminBaseController {
                 'is_active' => isset($_POST['is_active']) ? 1 : 0
             ];
 
-            if ($this->contentModel->update($id, $data)) {
+            if ($projectModel->update($id, $data)) {
                 header('Location: /admin.php?action=trislav_projects&success=1');
                 exit;
             }
@@ -370,13 +526,208 @@ class AdminTrislavGroupController extends AdminBaseController {
 
     public function projects_toggle() {
         $id = $_GET['id'] ?? null;
-
         if ($id) {
-            $this->contentModel->toggleStatus($id);
+            $projectModel = new TrislavGroupProject();
+            $projectModel->toggleStatus($id);
         }
-
         header('Location: /admin.php?action=trislav_projects');
         exit;
+    }
+
+    public function shopping_centers() {
+        $shoppingCenterModel = new ShoppingCenter();
+        $centers = $shoppingCenterModel->getAll();
+
+        $this->view('admin/trislav_group_shopping_centers', [
+            'title' => 'Управление торговыми центрами',
+            'centers' => $centers,
+            'current_action' => 'trislav_shopping_centers'
+        ]);
+    }
+
+    public function shopping_centers_create() {
+        if ($_POST) {
+            $shoppingCenterModel = new ShoppingCenter();
+            $data = [
+                'title' => $_POST['title'] ?? '',
+                'address' => $_POST['address'] ?? '',
+                'order_index' => $_POST['order_index'] ?? 0,
+                'is_active' => isset($_POST['is_active']) ? 1 : 0
+            ];
+
+            $shoppingCenterModel->create($data);
+            header('Location: /admin.php?action=trislav_shopping_centers&success=1');
+            exit;
+        }
+
+        $this->view('admin/trislav_group_shopping_centers_form', [
+            'title' => 'Добавить торговый центр',
+            'current_action' => 'trislav_shopping_centers',
+            'item' => null
+        ]);
+    }
+
+    public function shopping_centers_edit() {
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            header('Location: /admin.php?action=trislav_shopping_centers');
+            exit;
+        }
+
+        $shoppingCenterModel = new ShoppingCenter();
+        $item = $shoppingCenterModel->find($id);
+
+        if (!$item) {
+            header('Location: /admin.php?action=trislav_shopping_centers&error=1');
+            exit;
+        }
+
+        if ($_POST) {
+            $data = [
+                'title' => $_POST['title'] ?? '',
+                'address' => $_POST['address'] ?? '',
+                'order_index' => $_POST['order_index'] ?? 0,
+                'is_active' => isset($_POST['is_active']) ? 1 : 0
+            ];
+
+            $shoppingCenterModel->update($id, $data);
+            header('Location: /admin.php?action=trislav_shopping_centers&success=1');
+            exit;
+        }
+
+        $this->view('admin/trislav_group_shopping_centers_form', [
+            'title' => 'Редактировать торговый центр',
+            'current_action' => 'trislav_shopping_centers',
+            'item' => $item
+        ]);
+    }
+
+    public function shopping_centers_toggle() {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $shoppingCenterModel = new ShoppingCenter();
+            $shoppingCenterModel->toggleStatus($id);
+        }
+        header('Location: /admin.php?action=trislav_shopping_centers');
+        exit;
+    }
+
+    public function shopping_centers_delete() {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $shoppingCenterModel = new ShoppingCenter();
+            $shoppingCenterModel->delete($id);
+        }
+        header('Location: /admin.php?action=trislav_shopping_centers&success=1');
+        exit;
+    }
+
+    /**
+     * Обработка загрузки видео файла с отладкой в файл
+     */
+    private function handleVideoUpload($file, $shoppingCenterId = null) {
+        if ($file['error'] === UPLOAD_ERR_OK) {
+            // Временное сохранение файла
+            $uploadDir = ROOT_PATH . '/uploads/videos/temp/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $safeName = preg_replace('/[^a-zA-Z0-9-_]/', '', pathinfo($file['name'], PATHINFO_FILENAME));
+            $filename = time() . '_' . $safeName . '.' . $extension;
+            $filepath = $uploadDir . $filename;
+
+            if (move_uploaded_file($file['tmp_name'], $filepath)) {
+                // Загружаем на Яндекс.Диск если указан ТЦ
+                if ($shoppingCenterId) {
+                    try {
+                        $yandexConfig = require ROOT_PATH . '/config/yandex_disk.php';
+                        $diskService = new YandexDiskService($yandexConfig['token']);
+
+                        // Проверим подключение
+                        $isConnected = $diskService->checkConnection();
+
+                        if ($isConnected) {
+                            $remoteFilename = $safeName . '.mp4';
+                            $yandexDiskPath = "slides/{$shoppingCenterId}/{$remoteFilename}";
+
+                            $uploadResult = $diskService->uploadVideoToShoppingCenter($filepath, $shoppingCenterId, $remoteFilename);
+
+                            if ($uploadResult) {
+
+                                // Удаляем временный файл после успешной загрузки
+                                unlink($filepath);
+
+                                return [
+                                    'filename' => $remoteFilename,
+                                    'disk_path' => $yandexDiskPath
+                                ];
+                            } else {
+                            }
+                        } else {
+                        }
+                    } catch (Exception $e) {
+                    }
+                } else {
+                }
+
+                // Если Яндекс.Диск не доступен, сохраняем локально
+                $finalDir = ROOT_PATH . '/uploads/videos/';
+                if (!is_dir($finalDir)) {
+                    mkdir($finalDir, 0755, true);
+                }
+
+                $finalPath = $finalDir . $filename;
+                rename($filepath, $finalPath);
+
+
+                return [
+                    'filename' => $filename,
+                    'disk_path' => null
+                ];
+            } else {
+            }
+        } else {
+        }
+
+        return null;
+    }
+
+    public function check_yandex_disk() {
+        $yandexConfig = require ROOT_PATH . '/config/yandex_disk.php';
+        $diskService = new YandexDiskService($yandexConfig['token']);
+
+        $isConnected = $diskService->checkConnection();
+
+        if ($isConnected) {
+            echo json_encode(['status' => 'success', 'message' => 'Яндекс.Диск подключен успешно']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Ошибка подключения к Яндекс.Диску']);
+        }
+        exit;
+    }
+
+    /**
+     * Обновляет связь с информацией о видео файле
+     */
+    /**
+     * Обновляет связь с информацией о видео файле
+     */
+    private function updateConnectionWithVideo($clientId, $projectId, $videoFilename, $yandexDiskPath) {
+        $connectionModel = new TrislavGroupClientProject();
+
+        // Находим ID последней связи для этого клиента и проекта
+        $connection = $connectionModel->findByClientAndProject($clientId, $projectId);
+
+        if ($connection) {
+            // Обновляем связь с видео информацией
+            $connectionModel->update($connection['id'], [
+                'video_filename' => $videoFilename,
+                'yandex_disk_path' => $yandexDiskPath
+            ]);
+        } else {
+        }
     }
 }
 ?>

@@ -1,5 +1,10 @@
 <?php
 class Controller {
+
+    public function __construct() {
+        // Убедимся что конструктор существует и не вызывает ошибок
+    }
+
     protected function view($view, $data = []) {
         // Извлекаем переменные из data
         extract($data);

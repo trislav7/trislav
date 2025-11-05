@@ -1,6 +1,6 @@
 <?php
 class AdminLeadsController extends AdminBaseController {
-    
+
     public function list() {
         $leadModel = new Lead();
         $leads = $leadModel->getAll();

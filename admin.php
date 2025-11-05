@@ -25,6 +25,9 @@ spl_autoload_register(function ($class) {
 
 require_once ROOT_PATH . '/config/database.php';
 
+// admin.php - после подключения database.php
+require_once ROOT_PATH . '/app/core/helpers.php';
+
 // Определяем действие и контроллер
 $action = $_GET['action'] ?? 'dashboard';
 $action = str_replace('-', '_', $action);
@@ -55,6 +58,32 @@ if (strpos($action, 'services_') === 0) {
     // ДОБАВЛЯЕМ ОБРАБОТКУ ДЛЯ ТРИСЛАВ ГРУПП
     $controller = new AdminTrislavGroupController();
     $method = str_replace('trislav_', '', $action);
+} elseif (strpos($action, 'settings') === 0) {
+    $controller = new AdminSettingsController();
+    $method = 'index';
+} elseif (strpos($action, 'led_advantages_') === 0) {
+    $controller = new AdminLedAdvantagesController();
+    $method = str_replace('led_advantages_', '', $action);
+} elseif ($action === 'led_advantages') {
+    $controller = new AdminLedAdvantagesController();
+    $method = 'index';
+} elseif (strpos($action, 'led_requirements_') === 0) {
+    $controller = new AdminLedRequirementsController();
+    $method = str_replace('led_requirements_', '', $action);
+} elseif ($action === 'led_requirements') {
+    $controller = new AdminLedRequirementsController();
+    $method = 'index';
+} elseif (strpos($action, 'trislav_shopping_centers') === 0) {
+    $controller = new AdminTrislavGroupController();
+    $method = str_replace('trislav_', '', $action);
+} elseif ($action === 'ai_assistant') {
+    // ДЛЯ ГЛАВНОЙ СТРАНИЦЫ AI АССИСТЕНТА
+    $controller = new AdminAIAssistantController();
+    $method = 'index';
+} elseif ($action === 'ai_assistant_generate') {
+    // ДЛЯ AJAX ГЕНЕРАЦИИ ПРОМПТА
+    $controller = new AdminAIAssistantController();
+    $method = 'generatePrompt';
 } else {
     $controller = new AdminAuthController();
     $method = $action;
@@ -62,9 +91,15 @@ if (strpos($action, 'services_') === 0) {
 
 // Вызываем метод
 if (method_exists($controller, $method)) {
+    // ОТЛАДКА: выведем что вызывается
+    error_log("Calling method: " . get_class($controller) . "->" . $method);
     $controller->$method();
 } else {
-    // Показываем красивую 404 для админки через тот же файл
+    // ОТЛАДКА: выведем информацию об ошибке
+    error_log("Method not found: " . get_class($controller) . "->" . $method);
+    error_log("Available methods: " . implode(', ', get_class_methods($controller)));
+
+    // Показываем красивую 404 для админки
     $errorPage = ROOT_PATH . '/app/views/errors/not_found.php';
     if (file_exists($errorPage)) {
         include $errorPage;
@@ -73,6 +108,7 @@ if (method_exists($controller, $method)) {
         echo "<p>Действие не найдено: $action</p>";
         echo "<p>Контроллер: " . get_class($controller) . "</p>";
         echo "<p>Метод: $method</p>";
+        echo "<p>Доступные методы: " . implode(', ', get_class_methods($controller)) . "</p>";
         echo "<p><a href='/admin.php'>На главную админки</a></p>";
     }
 }

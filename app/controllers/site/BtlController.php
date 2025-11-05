@@ -2,13 +2,16 @@
 class BtlController extends Controller {
     public function index() {
         $serviceModel = new Service();
+        $advantageModel = new LedAdvantage();
         $portfolioModel = new Portfolio();
 
         $services = $serviceModel->getActiveByCategory('btl');
-        $portfolio = $portfolioModel->getByCategory('btl');
+        $advantages = $advantageModel->getActiveByCategory('btl');
+        $portfolio = $portfolioModel->getForSlider('btl', 4);
 
         $this->view('site/btl', [
             'services' => $services,
+            'advantages' => $advantages,
             'portfolio' => $portfolio,
             'title' => 'BTL Мероприятия | Трислав Медиа'
         ]);
@@ -36,3 +39,4 @@ class BtlController extends Controller {
         exit;
     }
 }
+?>

@@ -78,6 +78,10 @@
                 <i class="fas fa-tachometer-alt w-5 mr-3"></i>
                 Дашборд
             </a>
+            <a href="/admin.php?action=settings" class="flex items-center py-3 px-4 text-light hover:bg-highlight/20 hover:text-highlight rounded-lg transition-all duration-300 <?= (($current_action ?? '') == 'dashboard') ? 'active-menu' : '' ?>">
+                <i class="fas fa-cog mr-3"></i>
+                Настройки сайта
+            </a>
             <a href="/admin.php?action=services_list" class="flex items-center py-3 px-4 text-light hover:bg-highlight/20 hover:text-highlight rounded-lg transition-all duration-300 <?= (strpos(($current_action ?? ''), 'services') === 0) ? 'active-menu' : '' ?>">
                 <i class="fas fa-cog w-5 mr-3"></i>
                 Услуги
@@ -94,9 +98,24 @@
                 <i class="fas fa-envelope w-5 mr-3"></i>
                 Заявки
             </a>
+            <a href="/admin.php?action=work_process" class="flex items-center py-3 px-4 text-light hover:bg-highlight/20 hover:text-highlight rounded-lg transition-all duration-300">
+                <i class="fas fa-cogs mr-3"></i>Процесс работы
+            </a>
             <a href="/admin.php?action=trislav_content" class="flex items-center py-3 px-4 text-light hover:bg-highlight/20 hover:text-highlight rounded-lg transition-all duration-300 <?= (strpos(($current_action ?? ''), 'trislav') === 0) ? 'active-menu' : '' ?>">
                 <i class="fas fa-building w-5 mr-3"></i>
                 Трислав Групп
+            </a>
+            <a href="/admin.php?action=led_advantages" class="flex items-center py-3 px-4 text-light hover:bg-highlight/20 hover:text-highlight rounded-lg transition-all duration-300">
+                <i class="fas fa-building w-5 mr-3"></i>
+                Преимущества
+            </a>
+            <a href="/admin.php?action=led_requirements" class="flex items-center py-3 px-4 text-light hover:bg-highlight/20 hover:text-highlight rounded-lg transition-all duration-300">
+                <i class="fas fa-building w-5 mr-3"></i>
+                Требования
+            </a>
+            <a href="/admin.php?action=ai_assistant" class="flex items-center py-3 px-4 text-light hover:bg-highlight/20 hover:text-highlight rounded-lg transition-all duration-300 <?= (($current_action ?? '') == 'ai_assistant') ? 'active-menu' : '' ?>">
+                <i class="fas fa-robot w-5 mr-3"></i>
+                AI Ассистент
             </a>
         </nav>
     </aside>

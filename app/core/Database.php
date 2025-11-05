@@ -2,25 +2,16 @@
 class Database {
     private static $instance = null;
     private $pdo;
-    
+
     private function __construct() {
         // Проверяем, существует ли конфиг
         $configFile = ROOT_PATH . '/config/database.php';
         if (!file_exists($configFile)) {
             die("Файл конфигурации базы данных не найден: " . $configFile);
         }
-        
-        $config = require $configFile; // используем require вместо require_once
-        
-        // ДЕБАГ: посмотрим что возвращает конфиг
-        if ($config === true) {
-            die("ОШИБКА: config/database.php возвращает true вместо массива. Убедитесь, что файл заканчивается на 'return \$config;'");
-        }
-        
-        if (!is_array($config)) {
-            die("ОШИБКА: config/database.php должен возвращать массив. Получено: " . gettype($config));
-        }
-        
+
+        $config = require $configFile;
+
         // Проверяем наличие всех необходимых параметров
         $required = ['host', 'dbname', 'username', 'password'];
         foreach ($required as $key) {
@@ -28,20 +19,28 @@ class Database {
                 die("Отсутствует параметр конфигурации: $key. Доступные ключи: " . implode(', ', array_keys($config)));
             }
         }
-        
+
         try {
-            $dsn = "mysql:host={$config['host']};dbname={$config['dbname']}";
-            
+            $dsn = "mysql:host={$config['host']};dbname={$config['dbname']};charset={$config['charset']}";
+
+            $options = $config['options'] ?? [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::ATTR_TIMEOUT => 300
+            ];
+
             $this->pdo = new PDO(
                 $dsn,
                 $config['username'],
                 $config['password'],
-                [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false
-                ]
+                $options
             );
+
+            // Дополнительно устанавливаем таймауты
+            $this->pdo->exec("SET wait_timeout=300");
+            $this->pdo->exec("SET interactive_timeout=300");
+
         } catch (PDOException $e) {
             die("Ошибка подключения к базе данных: " . $e->getMessage());
         }

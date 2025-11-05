@@ -16,90 +16,118 @@
     </div>
 </section>
 
-<!-- Наши услуги -->
-<section id="services" class="py-16 bg-secondary px-4">
-    <div class="container mx-auto max-w-6xl">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl md:text-4xl font-bold mb-4">Наши услуги</h2>
-            <p class="text-lg text-gray-300 max-w-2xl mx-auto">Полный цикл создания визуального контента для вашего бренда</p>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Видеоролики -->
-            <div class="service-card bg-white/5 rounded-xl p-8 transition-all duration-300 hover:shadow-2xl">
-                <div class="flex items-start mb-6">
-                    <div class="w-16 h-16 bg-highlight/20 rounded-full flex items-center justify-center mr-6">
-                        <i class="fas fa-video text-2xl text-highlight"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-2xl font-bold text-highlight mb-2">Видеоролики</h3>
-                        <p class="text-gray-300">Создание профессиональных видео для рекламы, социальных сетей и корпоративных целей</p>
-                    </div>
-                </div>
-                <ul class="space-y-3 mb-6">
-                    <li class="flex items-center">
-                        <i class="fas fa-check text-highlight mr-3"></i>
-                        Рекламные ролики для ТВ и digital-площадок
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-check text-highlight mr-3"></i>
-                        Корпоративные видео и презентации
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-check text-highlight mr-3"></i>
-                        Видео для социальных сетей
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-check text-highlight mr-3"></i>
-                        Анимационные и моушн-дизайн ролики
-                    </li>
-                </ul>
-                <div class="flex flex-wrap gap-2">
-                    <span class="bg-highlight/20 text-highlight px-3 py-1 rounded-full text-sm">Full HD / 4K</span>
-                    <span class="bg-highlight/20 text-highlight px-3 py-1 rounded-full text-sm">Анимация</span>
-                    <span class="bg-highlight/20 text-highlight px-3 py-1 rounded-full text-sm">Моушн-дизайн</span>
-                </div>
-            </div>
-            
-            <!-- Логотипы и брендинг -->
-            <div class="service-card bg-white/5 rounded-xl p-8 transition-all duration-300 hover:shadow-2xl">
-                <div class="flex items-start mb-6">
-                    <div class="w-16 h-16 bg-highlight/20 rounded-full flex items-center justify-center mr-6">
-                        <i class="fas fa-palette text-2xl text-highlight"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-2xl font-bold text-highlight mb-2">Логотипы и Брендинг</h3>
-                        <p class="text-gray-300">Разработка уникальной айдентики, которая выделяет ваш бренд среди конкурентов</p>
-                    </div>
-                </div>
-                <ul class="space-y-3 mb-6">
-                    <li class="flex items-center">
-                        <i class="fas fa-check text-highlight mr-3"></i>
-                        Разработка логотипа и фирменного стиля
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-check text-highlight mr-3"></i>
-                        Брендбук и гайдлайны
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-check text-highlight mr-3"></i>
-                        Дизайн упаковки и этикеток
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-check text-highlight mr-3"></i>
-                        Ребрендинг существующих компаний
-                    </li>
-                </ul>
-                <div class="flex flex-wrap gap-2">
-                    <span class="bg-highlight/20 text-highlight px-3 py-1 rounded-full text-sm">Логотип</span>
-                    <span class="bg-highlight/20 text-highlight px-3 py-1 rounded-full text-sm">Фирменный стиль</span>
-                    <span class="bg-highlight/20 text-highlight px-3 py-1 rounded-full text-sm">Брендбук</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+    <!-- Секция услуг -->
+    <section class="py-16 px-4 bg-gradient-to-b from-primary to-secondary">
+        <div class="container mx-auto max-w-6xl">
+            <h2 class="text-3xl lg:text-4xl font-bold text-center text-light mb-12">
+                Наши услуги для видео и логотипов
+            </h2>
 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <?php
+                $serviceModel = new Service();
+                $videoServices = $serviceModel->getWithFullDataByCategory('video');
+
+                if (!empty($videoServices)):
+                    foreach ($videoServices as $service):
+                        $features = safe_json_decode($service['features'] ?? '', []);
+                        $tags = safe_json_decode($service['tags'] ?? '', []);
+                        ?>
+                        <div class="service-card bg-white/5 rounded-xl p-8 transition-all duration-300 hover:shadow-2xl">
+                            <div class="flex items-start mb-6">
+                                <div class="w-16 h-16 bg-highlight/20 rounded-full flex items-center justify-center mr-6">
+                                    <?php if (!empty($service['icon_svg'])): ?>
+                                        <?= $service['icon_svg'] ?>
+                                    <?php else: ?>
+                                        <!-- Иконка по умолчанию -->
+                                        <svg class="w-8 h-8 text-highlight" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                            <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></rect>
+                                        </svg>
+                                    <?php endif; ?>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-highlight mb-2"><?= htmlspecialchars($service['title']) ?></h3>
+                                    <p class="text-gray-300"><?= htmlspecialchars($service['short_description']) ?></p>
+                                </div>
+                            </div>
+
+                            <?php if (!empty($features)): ?>
+                                <ul class="space-y-3 mb-6">
+                                    <?php foreach ($features as $feature): ?>
+                                        <?php if (!empty(trim($feature))): ?>
+                                            <li class="flex items-center">
+                                                <i class="fas fa-check text-highlight mr-3"></i>
+                                                <?= htmlspecialchars(trim($feature)) ?>
+                                            </li>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+
+                            <?php if (!empty($tags)): ?>
+                                <div class="flex flex-wrap gap-2">
+                                    <?php foreach ($tags as $tag): ?>
+                                        <?php if (!empty(trim($tag))): ?>
+                                            <span class="bg-highlight/20 text-highlight px-3 py-1 rounded-full text-sm">
+                                        <?= htmlspecialchars(trim($tag)) ?>
+                                    </span>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php
+                    endforeach;
+                else:
+                    ?>
+                    <!-- Запасной контент -->
+                    <div class="col-span-full text-center py-12 text-gray-400">
+                        <i class="fas fa-video text-4xl mb-4"></i>
+                        <p>Услуги для видео и логотипов скоро будут добавлены</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
+
+    <!-- Блок "Как мы работаем" -->
+    <section class="py-16 bg-primary px-4">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-light mb-4">Как мы работаем</h2>
+                <p class="text-lg text-gray-300 max-w-2xl mx-auto">Четкий процесс создания промо-материалов от идеи до реализации</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <?php
+                $processModel = new WorkProcess();
+                $processes = $processModel->getAllActive();
+
+                if (!empty($processes)):
+                    foreach ($processes as $process):
+                        ?>
+                        <div class="process-step text-center p-6">
+                            <div class="w-20 h-20 bg-highlight/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <span class="text-2xl font-bold text-highlight"><?= $process['step_number'] ?></span>
+                            </div>
+                            <h3 class="text-xl font-bold text-light mb-4"><?= htmlspecialchars($process['title']) ?></h3>
+                            <p class="text-gray-300"><?= htmlspecialchars($process['description']) ?></p>
+                        </div>
+                    <?php
+                    endforeach;
+                else:
+                    ?>
+                    <!-- Запасной контент -->
+                    <div class="col-span-4 text-center text-gray-400 py-8">
+                        <i class="fas fa-cogs text-4xl mb-4"></i>
+                        <p>Информация о процессе работы скоро будет добавлена</p>
+                        <p class="text-sm mt-2">Добавьте этапы работы через админ-панель</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
 <!-- Портфолио -->
 <section id="portfolio" class="py-16 bg-primary px-4">
     <div class="container mx-auto max-w-6xl">

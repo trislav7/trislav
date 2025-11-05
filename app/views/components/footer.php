@@ -2,9 +2,9 @@
     <div class="container mx-auto max-w-6xl">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-8">
             <div class="footer-column">
-                <h3 class="text-xl font-bold text-highlight mb-6">Трислав Медиа</h3>
+                <h3 class="w-40 mb-6"><img src="/images/tm_.png" /></h3>
                 <p class="text-gray-400 mb-6 leading-relaxed">
-                    Элитное рекламное агентство полного цикла. Мы создаем эффективные рекламные кампании, которые приносят результат.
+                    Мы создаем точечную рекламу, которая доходит до потребителя.
                 </p>
                 <div class="social-links flex space-x-4">
                     <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-light transition-all duration-300 hover:bg-highlight hover:-translate-y-1">

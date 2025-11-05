@@ -55,9 +55,13 @@
                 </div>
 
                 <div>
-                    <label class="block text-light font-semibold mb-3">Теги (через запятую)</label>
-                    <input type="text" name="tags" value="<?= isset($portfolio['tags']) ? implode(", ", json_decode($portfolio['tags'], true)) : '' ?>"
-                           class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight placeholder-gray-500">
+                    <label class="block text-light font-semibold mb-3">Теги (через запятую) *</label>
+                    <input type="text" name="tags" value="<?= isset($portfolio['tags']) ? implode(", ", json_decode($portfolio['tags'], true)) : '' ?>" required
+                           class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight placeholder-gray-500"
+                           placeholder="Размер: 12x6м, HD качество">
+                    <p class="text-gray-400 text-sm mt-1">
+                        Первый тег будет слева, второй - справа. Максимум 2 тега для красивого отображения.
+                    </p>
                 </div>
 
                 <div class="flex items-center">

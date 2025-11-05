@@ -2,6 +2,15 @@
 class Service extends Model {
     protected $table = 'services';
 
+
+    public function getWithFullDataByCategory($category) {
+        return $this->db->fetchAll("
+            SELECT * FROM services 
+            WHERE category = ? AND is_active = 1 
+            ORDER BY order_index
+        ", [$category]);
+    }
+
     public function getActiveByCategory($category) {
         $cacheKey = "services_{$category}";
 

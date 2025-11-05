@@ -1,7 +1,8 @@
 <?php
 class Router {
     private $routes = [];
-    
+    private $routeFound = false;
+
     public function add($method, $path, $handler) {
         $this->routes[] = [
             'method' => $method,
@@ -9,88 +10,103 @@ class Router {
             'handler' => $handler
         ];
     }
-    
+
+    public function getRoutes() {
+        return $this->routes;
+    }
+
     public function route() {
         $requestMethod = $_SERVER['REQUEST_METHOD'];
         $requestUri = $_SERVER['REQUEST_URI'];
-        
+
         // Убираем query параметры
         $requestPath = parse_url($requestUri, PHP_URL_PATH);
-        
-        // ДЕБАГ: информация о запросе
-        if (isset($_GET['debug'])) {
-            echo "<pre style='background: #e0f7fa; padding: 10px; margin: 10px 0;'>";
-            echo "=== ROUTER DEBUG ===\n";
-            echo "URI: $requestPath\n";
-            echo "Method: $requestMethod\n";
-            echo "</pre>";
-        }
-        
-        foreach ($this->routes as $route) {
-            // Проверяем метод
-            if ($route['method'] !== $requestMethod) {
+
+        foreach ($this->routes as $index => $route) {
+            // ВАЖНО: обрабатываем HEAD запросы так же как GET
+            $routeMethod = $route['method'];
+            $isHeadRequest = $requestMethod === 'HEAD';
+            $isGetRoute = $routeMethod === 'GET';
+
+            if ($isHeadRequest && $isGetRoute) {
+                // Для HEAD запросов используем GET маршруты
+                $methodMatches = true;
+            } else {
+                // Для остальных - строгое сравнение
+                $methodMatches = $routeMethod === $requestMethod;
+            }
+
+            if (!$methodMatches) {
                 continue;
             }
-            
+
             // Преобразуем маршрут в регулярное выражение
             $pattern = $this->convertToRegex($route['path']);
-            
+
             if (preg_match($pattern, $requestPath, $matches)) {
                 // Извлекаем параметры
                 $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
-                
+
                 // Разбираем handler
                 list($controllerName, $methodName) = explode('@', $route['handler']);
-                
-                // ДЕБАГ: информация о найденном маршруте
-                if (isset($_GET['debug'])) {
-                    echo "<pre style='background: #c8e6c9; padding: 10px; margin: 10px 0;'>";
-                    echo "Маршрут найден!\n";
-                    echo "Контроллер: $controllerName\n";
-                    echo "Метод: $methodName\n";
-                    echo "Параметры: " . print_r($params, true) . "\n";
-                    echo "</pre>";
-                }
-                
+
                 // Проверяем существование класса
                 if (!class_exists($controllerName)) {
-                    if (isset($_GET['debug'])) {
-                        echo "<pre style='background: #ffcdd2; padding: 10px; margin: 10px 0;'>";
-                        echo "Класс не существует: $controllerName\n";
-                        echo "</pre>";
-                    }
-                    continue;
+                    $this->handleNotFound();
+                    return;
                 }
-                
+
                 // Создаем контроллер и вызываем метод
                 $controller = new $controllerName();
-                
+
                 if (!method_exists($controller, $methodName)) {
-                    if (isset($_GET['debug'])) {
-                        echo "<pre style='background: #ffcdd2; padding: 10px; margin: 10px 0;'>";
-                        echo "Метод не существует: $methodName в классе $controllerName\n";
-                        echo "</pre>";
-                    }
-                    continue;
+                    $this->handleNotFound();
+                    return;
                 }
-                
+
+                // Устанавливаем правильный заголовок 200 для найденных маршрутов
+                if (!headers_sent()) {
+                    http_response_code(200);
+                }
+
+                // ВАЖНО: для HEAD запросов не выводим контент
+                if ($requestMethod === 'HEAD') {
+                    // Устанавливаем заголовки и завершаем
+                    if (!headers_sent()) {
+                        header('Content-Type: text/html; charset=UTF-8');
+                    }
+                    return;
+                }
+
                 call_user_func_array([$controller, $methodName], $params);
+
+                // ВАЖНО: выходим после успешного выполнения контроллера
                 return;
             }
         }
-        
-        // Если маршрут не найден
+
         $this->handleNotFound();
     }
-    
+
     private function convertToRegex($path) {
         // Заменяем {param} на named capture groups
         $pattern = preg_replace('/\{([a-z]+)\}/', '(?P<$1>[^/]+)', $path);
-        return '#^' . $pattern . '$#';
+        $regex = '#^' . $pattern . '$#';
+
+        return $regex;
     }
 
     private function handleNotFound() {
-        http_response_code(404);
+
+        // Устанавливаем 404 только если заголовки еще не отправлены
+        if (!headers_sent()) {
+            http_response_code(404);
+        }
+
+        // Для HEAD запросов не показываем тело 404
+        if ($_SERVER['REQUEST_METHOD'] === 'HEAD') {
+            exit;
+        }
 
         // Показываем красивую 404 страницу из отдельного файла
         $errorPage = ROOT_PATH . '/app/views/errors/not_found.php';
@@ -100,6 +116,9 @@ class Router {
             // Фолбэк на минимальную 404 страницу
             $this->showMinimal404();
         }
+
+        // ВАЖНО: завершаем выполнение после показа 404
+        exit;
     }
 
     private function showMinimal404() {

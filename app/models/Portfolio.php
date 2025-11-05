@@ -38,4 +38,29 @@ class Portfolio extends Model {
         $this->cache->set($cacheKey, $result);
         return $result;
     }
+
+    public function getAll() {
+        return $this->db->fetchAll("
+            SELECT * FROM portfolio 
+            ORDER BY project_date DESC
+        ");
+    }
+
+    public function getForSlider($category, $limit = 4) {
+        $cacheKey = "portfolio_slider_{$category}_{$limit}";
+
+        if ($cached = $this->cache->get($cacheKey)) {
+            return $cached;
+        }
+
+        $result = $this->db->fetchAll("
+        SELECT * FROM portfolio 
+        WHERE category = ? AND is_active = 1 
+        ORDER BY project_date DESC 
+        LIMIT ?
+    ", [$category, $limit]);
+
+        $this->cache->set($cacheKey, $result);
+        return $result;
+    }
 }
