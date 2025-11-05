@@ -1,5 +1,4 @@
 <?php
-//if (!function_exists('debug_log')) {
 //        $logFile = ROOT_PATH . '/debug.log';
 //        $timestamp = date('Y-m-d H:i:s');
 //        $formattedMessage = "[$timestamp] $message\n";
@@ -147,7 +146,6 @@ class YandexDiskService {
     }
 
     public function downloadFile($remotePath, $localPath) {
-        debug_log("Downloading from Yandex Disk: $remotePath -> $localPath");
 
         try {
             $url = $this->baseUrl . '/download?path=' . urlencode($remotePath);
@@ -168,23 +166,19 @@ class YandexDiskService {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
             if ($httpCode !== 200) {
-                debug_log("Yandex Disk API error: HTTP $httpCode - $response");
                 return false;
             }
 
             $data = json_decode($response, true);
 
             if (!isset($data['href'])) {
-                debug_log("Yandex Disk download link not found in response: " . $response);
                 return false;
             }
 
-            debug_log("Got download link: " . $data['href']);
 
             // Скачиваем файл по полученной ссылке
             $fileHandle = fopen($localPath, 'wb');
             if (!$fileHandle) {
-                debug_log("Cannot open local file for writing: $localPath");
                 return false;
             }
 
@@ -204,16 +198,13 @@ class YandexDiskService {
             fclose($fileHandle);
 
             if ($downloadResult && $downloadCode === 200) {
-                debug_log("File downloaded successfully: $remotePath -> $localPath");
                 return true;
             } else {
-                debug_log("File download failed: HTTP $downloadCode - $downloadError");
                 @unlink($localPath); // Удаляем частично скачанный файл
                 return false;
             }
 
         } catch (Exception $e) {
-            debug_log("Yandex Disk download exception: " . $e->getMessage());
             @unlink($localPath);
             return false;
         }

@@ -1,10 +1,5 @@
 <?php
-//function debug_log($message) {
-//    $logFile = ROOT_PATH . '/debug_ai_assistant.log';
-//    $timestamp = date('Y-m-d H:i:s');
-//    $logMessage = "[$timestamp] $message\n";
-//    file_put_contents($logFile, $logMessage, FILE_APPEND | LOCK_EX);
-//}
+
 class AdminAIAssistantController extends AdminBaseController {
     public function index() {
         $data = [
@@ -92,11 +87,8 @@ class AdminAIAssistantController extends AdminBaseController {
     }
 
     private function generateSmartPrompt($question, $focus = '') {
-//        debug_log("Starting generateSmartPrompt");
-
         // Получаем актуальное состояние ключевых файлов
         $fileContents = $this->getCurrentFileContents();
-//        debug_log("File contents loaded, count: " . count($fileContents));
 
         $projectInfo = $this->getProjectInfo();
         $fileStructure = $this->getFileStructure();

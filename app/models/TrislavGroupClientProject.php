@@ -109,13 +109,11 @@ class TrislavGroupClientProject extends Model {
     }
 
     public function getByShoppingCenter($shoppingCenterId) {
-        debug_log("Getting connections for shopping center: " . $shoppingCenterId);
 
         try {
             // Используем правильное имя таблицы - БЕЗ 's' на конце
             $tableName = 'trislav_group_client_project';
 
-            debug_log("Using table: " . $tableName);
 
             // Правильный запрос с существующими полями
             $result = $this->db->fetchAll("
@@ -126,18 +124,15 @@ class TrislavGroupClientProject extends Model {
                 ORDER BY id
             ", [$shoppingCenterId]);
 
-            debug_log("Found " . count($result) . " video connections for shopping center " . $shoppingCenterId);
 
             // Отладочная информация о найденных видео
             foreach ($result as $item) {
-                debug_log("Video found - filename: " . ($item['video_filename'] ?? 'null') .
                     ", yandex_path: " . ($item['yandex_disk_path'] ?? 'null'));
             }
 
             return $result;
 
         } catch (Exception $e) {
-            debug_log("SQL Error in getByShoppingCenter: " . $e->getMessage());
             return [];
         }
     }
