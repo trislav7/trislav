@@ -1,5 +1,27 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # ========== РЕДИРЕКТЫ ДЛЯ ТРИСЛАВ ГРУПП (trislav.рф) ==========
+
+    # 1. Редирект с trislav.ru на punycode домен
+    RewriteCond %{HTTP_HOST} ^(www\.)?trislav\.ru$ [NC]
+    RewriteRule ^(.*)$ https://xn--80aeqmxhe.xn--p1ai/$1 [R=301,L]
+
+    # 2. Редирект с www.punycode на punycode без www
+    RewriteCond %{HTTP_HOST} ^www\.xn--80aeqmxhe\.xn--p1ai$ [NC]
+    RewriteRule ^(.*)$ https://xn--80aeqmxhe.xn--p1ai/$1 [R=301,L]
+
+    # ========== РЕДИРЕКТЫ ДЛЯ ТРИСЛАВ МЕДИА (медиа.трислав.рф) ==========
+
+    # 3. Редирект с media.trislav.ru на punycode домен
+    RewriteCond %{HTTP_HOST} ^(www\.)?media\.trislav\.ru$ [NC]
+    RewriteRule ^(.*)$ https://xn--80ahcnr.xn--80aeqmxhe.xn--p1ai/$1 [R=301,L]
+
+    # 4. Редирект с www.punycode на punycode без www
+    RewriteCond %{HTTP_HOST} ^www\.xn--80ahcnr\.xn--80aeqmxhe\.xn--p1ai$ [NC]
+    RewriteRule ^(.*)$ https://xn--80ahcnr.xn--80aeqmxhe.xn--p1ai/$1 [R=301,L]
+
+    # ========== ВАША ТЕКУЩАЯ ЛОГИКА (без изменений) ==========
     
     # Разрешаем прямые запросы к файлам и папкам
     RewriteCond %{REQUEST_FILENAME} -f [OR]
@@ -8,4 +30,11 @@
     
     # Все остальное на index.php
     RewriteRule . index.php [L]
+</IfModule>
+
+<IfModule mod_php.c>
+    php_value upload_max_filesize 500M
+    php_value post_max_size 500M
+    php_value max_execution_time 300
+    php_value max_input_time 300
 </IfModule>
