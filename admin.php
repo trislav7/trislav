@@ -73,9 +73,16 @@ if (strpos($action, 'services_') === 0) {
 } elseif ($action === 'led_requirements') {
     $controller = new AdminLedRequirementsController();
     $method = 'index';
+} elseif (strpos($action, 'video_schedule') === 0) {
+    $controller = new AdminVideoScheduleController();
+    $method = str_replace('video_schedule', '', $action);
+    $method = $method ?: 'index';
 } elseif (strpos($action, 'trislav_shopping_centers') === 0) {
     $controller = new AdminTrislavGroupController();
     $method = str_replace('trislav_', '', $action);
+} elseif ($action === 'download_shopping_center_videos') {
+    $controller = new AdminTrislavGroupController();
+    $method = 'download_shopping_center_videos';
 } elseif ($action === 'ai_assistant') {
     // ДЛЯ ГЛАВНОЙ СТРАНИЦЫ AI АССИСТЕНТА
     $controller = new AdminAIAssistantController();

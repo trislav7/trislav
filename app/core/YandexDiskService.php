@@ -145,5 +145,78 @@ class YandexDiskService {
 
         return $httpCode === 201;
     }
+
+    public function downloadFile($remotePath, $localPath) {
+        debug_log("Downloading from Yandex Disk: $remotePath -> $localPath");
+
+        try {
+            $url = $this->baseUrl . '/download?path=' . urlencode($remotePath);
+
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: OAuth ' . $this->token,
+                    'Accept: application/json'
+                ],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => false, // Важно: не следовать редиректам автоматически
+                CURLOPT_TIMEOUT => 300
+            ]);
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+            if ($httpCode !== 200) {
+                debug_log("Yandex Disk API error: HTTP $httpCode - $response");
+                return false;
+            }
+
+            $data = json_decode($response, true);
+
+            if (!isset($data['href'])) {
+                debug_log("Yandex Disk download link not found in response: " . $response);
+                return false;
+            }
+
+            debug_log("Got download link: " . $data['href']);
+
+            // Скачиваем файл по полученной ссылке
+            $fileHandle = fopen($localPath, 'wb');
+            if (!$fileHandle) {
+                debug_log("Cannot open local file for writing: $localPath");
+                return false;
+            }
+
+            $downloadCh = curl_init();
+            curl_setopt_array($downloadCh, [
+                CURLOPT_URL => $data['href'],
+                CURLOPT_FILE => $fileHandle,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_TIMEOUT => 300
+            ]);
+
+            $downloadResult = curl_exec($downloadCh);
+            $downloadCode = curl_getinfo($downloadCh, CURLINFO_HTTP_CODE);
+            $downloadError = curl_error($downloadCh);
+
+            curl_close($downloadCh);
+            fclose($fileHandle);
+
+            if ($downloadResult && $downloadCode === 200) {
+                debug_log("File downloaded successfully: $remotePath -> $localPath");
+                return true;
+            } else {
+                debug_log("File download failed: HTTP $downloadCode - $downloadError");
+                @unlink($localPath); // Удаляем частично скачанный файл
+                return false;
+            }
+
+        } catch (Exception $e) {
+            debug_log("Yandex Disk download exception: " . $e->getMessage());
+            @unlink($localPath);
+            return false;
+        }
+    }
 }
 ?>

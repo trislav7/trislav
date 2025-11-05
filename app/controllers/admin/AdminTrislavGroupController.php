@@ -729,5 +729,341 @@ class AdminTrislavGroupController extends AdminBaseController {
         } else {
         }
     }
+    public function download_shopping_center_videos() {
+        debug_log("=== DOWNLOAD SHOPPING CENTER VIDEOS WITH PLACEHOLDERS ===");
+
+        $shoppingCenterId = $_GET['shopping_center_id'] ?? null;
+        if (!$shoppingCenterId) {
+            debug_log("ERROR: No shopping center ID provided");
+            header('Location: /admin.php?action=trislav_shopping_centers&error=no_id');
+            exit;
+        }
+
+        try {
+            // Получаем информацию о ТЦ
+            $shoppingCenterModel = new ShoppingCenter();
+            $shoppingCenter = $shoppingCenterModel->find($shoppingCenterId);
+
+            if (!$shoppingCenter) {
+                debug_log("ERROR: Shopping center not found with ID: " . $shoppingCenterId);
+                header('Location: /admin.php?action=trislav_shopping_centers&error=center_not_found');
+                exit;
+            }
+
+            debug_log("Shopping center found: " . $shoppingCenter['title']);
+
+            // Получаем ВСЕ связи для этого ТЦ
+            $connectionModel = new TrislavGroupClientProject();
+            $connections = $connectionModel->getByShoppingCenter($shoppingCenterId);
+
+            debug_log("Total connections retrieved for TЦ {$shoppingCenterId}: " . count($connections));
+
+            // Создаем временную папку
+            $tempDir = ROOT_PATH . '/temp/tc_videos_' . time() . '_' . $shoppingCenterId;
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0755, true);
+                debug_log("Created temp directory: " . $tempDir);
+            }
+
+            $videoFiles = [];
+            $counter = 1;
+
+            // Обрабатываем КАЖДУЮ связку для этого ТЦ
+            foreach ($connections as $connection) {
+                debug_log("Processing connection ID {$connection['id']} for client {$connection['id_client']}");
+
+                $videoPath = null;
+
+                // Пробуем скачать с Яндекс.Диска
+                if (!empty($connection['yandex_disk_path'])) {
+                    debug_log("Downloading from Yandex Disk: " . $connection['yandex_disk_path']);
+                    $videoPath = $this->downloadFromYandexDisk(
+                        $connection['yandex_disk_path'],
+                        $tempDir,
+                        $counter
+                    );
+                }
+                // Если нет на Яндекс.Диске, пробуем локальный файл
+                elseif (!empty($connection['video_filename'])) {
+                    debug_log("Copying local video: " . $connection['video_filename']);
+                    $videoPath = $this->copyLocalVideo(
+                        $connection['video_filename'],
+                        $tempDir,
+                        $counter
+                    );
+                }
+                // Если есть только URL видео
+                elseif (!empty($connection['video'])) {
+                    debug_log("Downloading from URL: " . $connection['video']);
+                    $videoPath = $this->downloadVideoFromUrl(
+                        $connection['video'],
+                        $tempDir,
+                        $counter
+                    );
+                }
+
+                // Если видео не найдено - используем заглушку
+                if (!$videoPath) {
+                    debug_log("No video found for connection ID {$connection['id']}, using placeholder");
+                    $videoPath = $this->copyDefaultAd($tempDir, $counter);
+                }
+
+                if ($videoPath) {
+                    $videoFiles[] = $videoPath;
+                    debug_log("Video added (#{$counter}): " . basename($videoPath));
+                    $counter++;
+                }
+            }
+
+            // ДОБАВЛЯЕМ ЗАГЛУШКИ ДЛЯ ПРОПУЩЕННЫХ СЛОТОВ
+            // Создаем полный набор файлов от 00001 до максимального номера
+            $maxSlots = 50; // Максимальное количество слотов
+            $fullVideoFiles = [];
+
+            for ($i = 1; $i <= $maxSlots; $i++) {
+                $expectedFilename = sprintf("%05d", $i) . '.mp4';
+                $expectedPath = $tempDir . '/' . $expectedFilename;
+
+                // Ищем существующий файл с таким номером
+                $existingFile = null;
+                foreach ($videoFiles as $videoFile) {
+                    if (basename($videoFile) === $expectedFilename) {
+                        $existingFile = $videoFile;
+                        break;
+                    }
+                }
+
+                if ($existingFile) {
+                    $fullVideoFiles[] = $existingFile;
+                    debug_log("Slot {$i}: Using existing video");
+                } else {
+                    // Заполняем пропуск заглушкой
+                    $placeholderPath = $this->copyDefaultAd($tempDir, $i);
+                    if ($placeholderPath) {
+                        $fullVideoFiles[] = $placeholderPath;
+                        debug_log("Slot {$i}: Using placeholder");
+                    }
+                }
+            }
+
+            debug_log("Final video files count: " . count($fullVideoFiles));
+
+            // Создаем архив
+            if (!empty($fullVideoFiles)) {
+                debug_log("Creating archive for {$shoppingCenter['title']}...");
+                $archivePath = $this->createNumberedArchive($fullVideoFiles, $tempDir, $shoppingCenter['title']);
+                debug_log("Archive created: " . $archivePath);
+
+                $this->sendArchiveForDownload($archivePath, $shoppingCenter['title']);
+            } else {
+                debug_log("No videos found for shopping center {$shoppingCenter['title']}");
+                header('Location: /admin.php?action=trislav_shopping_centers&error=no_videos_found');
+                exit;
+            }
+
+            // Очищаем временные файлы
+            $this->cleanupTempFiles($tempDir);
+
+        } catch (Exception $e) {
+            debug_log("Shopping center videos download error: " . $e->getMessage());
+            debug_log("Stack trace: " . $e->getTraceAsString());
+            header('Location: /admin.php?action=trislav_shopping_centers&error=download_failed');
+            exit;
+        }
+    }
+
+    public function test_download_simple() {
+        debug_log("=== TEST DOWNLOAD SIMPLE ===");
+
+        // Просто создаем тестовый файл и отдаем его
+        $testContent = "Тестовый файл для проверки скачивания\n";
+        $testContent .= "ТЦ ID: " . ($_GET['shopping_center_id'] ?? 'unknown') . "\n";
+        $testContent .= "Время: " . date('Y-m-d H:i:s') . "\n";
+
+        $filename = 'test_download_' . time() . '.txt';
+
+        header('Content-Type: text/plain');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        echo $testContent;
+        exit;
+    }
+
+    /**
+     * Скачивает видео с Яндекс.Диска с правильным именем
+     */
+    private function downloadFromYandexDisk($yandexPath, $tempDir, $counter) {
+        try {
+            $yandexConfig = require ROOT_PATH . '/config/yandex_disk.php';
+            $diskService = new YandexDiskService($yandexConfig['token']);
+
+            $filename = sprintf("%05d", $counter) . '.mp4';
+            $localPath = $tempDir . '/' . $filename;
+
+            if ($diskService->downloadFile($yandexPath, $localPath)) {
+                return $localPath;
+            }
+        } catch (Exception $e) {
+            error_log("Yandex Disk download error: " . $e->getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Копирует локальное видео с правильным именем
+     */
+    private function copyLocalVideo($filename, $tempDir, $counter) {
+        $localPath = ROOT_PATH . '/uploads/videos/' . $filename;
+        if (file_exists($localPath)) {
+            $newFilename = sprintf("%05d", $counter) . '.mp4';
+            $newPath = $tempDir . '/' . $newFilename;
+
+            if (copy($localPath, $newPath)) {
+                return $newPath;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Создает архив с правильно пронумерованными файлами
+     */
+    private function createNumberedArchive($files, $tempDir, $shoppingCenterTitle) {
+        $archiveName = 'videos_' . preg_replace('/[^a-zA-Z0-9]/', '_', $shoppingCenterTitle) . '.zip';
+        $archivePath = $tempDir . '/' . $archiveName;
+
+        $zip = new ZipArchive();
+        if ($zip->open($archivePath, ZipArchive::CREATE) === TRUE) {
+            foreach ($files as $index => $file) {
+                if (file_exists($file)) {
+                    // Переименовываем файл в архиве
+                    $number = $index + 1;
+                    $archiveFilename = sprintf("%05d", $number) . '.mp4';
+                    $zip->addFile($file, $archiveFilename);
+                }
+            }
+            $zip->close();
+            return $archivePath;
+        }
+
+        throw new Exception("Failed to create archive");
+    }
+
+    /**
+     * Отправляет архив на скачивание
+     */
+    private function sendArchiveForDownload($archivePath, $shoppingCenterTitle) {
+        if (!file_exists($archivePath)) {
+            throw new Exception("Archive file not found: $archivePath");
+        }
+
+        debug_log("Sending archive for download: $archivePath");
+
+        // Очищаем все буферы вывода
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        $archiveName = 'videos_' . preg_replace('/[^a-zA-Z0-9]/', '_', $shoppingCenterTitle) . '.zip';
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/zip');
+        header('Content-Disposition: attachment; filename="' . $archiveName . '"');
+        header('Content-Transfer-Encoding: binary');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        header('Content-Length: ' . filesize($archivePath));
+
+        readfile($archivePath);
+        exit;
+    }
+
+    /**
+     * Очищает временные файлы
+     */
+    private function cleanupTempFiles($tempDir) {
+        // Файлы будут удалены после завершения скрипта
+        register_shutdown_function(function() use ($tempDir) {
+            if (is_dir($tempDir)) {
+                $files = glob($tempDir . '/*');
+                foreach ($files as $file) {
+                    if (is_file($file)) {
+                        @unlink($file);
+                    }
+                }
+                @rmdir($tempDir);
+                debug_log("Cleaned up temp directory: $tempDir");
+            }
+        });
+    }
+
+    /**
+     * Скачивает видео по URL
+     */
+    private function downloadVideoFromUrl($url, $tempDir, $counter) {
+        try {
+            $filename = sprintf("%05d", $counter) . '.mp4';
+            $localPath = $tempDir . '/' . $filename;
+
+            debug_log("Downloading video from URL: $url");
+
+            $ch = curl_init($url);
+            $fp = fopen($localPath, 'wb');
+
+            curl_setopt_array($ch, [
+                CURLOPT_FILE => $fp,
+                CURLOPT_HEADER => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_TIMEOUT => 300,
+                CURLOPT_SSL_VERIFYPEER => false
+            ]);
+
+            if (curl_exec($ch)) {
+                curl_close($ch);
+                fclose($fp);
+                debug_log("URL video downloaded successfully: $localPath");
+                return $localPath;
+            }
+
+            curl_close($ch);
+            fclose($fp);
+            @unlink($localPath);
+
+        } catch (Exception $e) {
+            debug_log("URL video download error: " . $e->getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Копирует заглушку с правильным именем
+     */
+    private function copyDefaultAd($tempDir, $counter) {
+        $defaultAdPath = ROOT_PATH . '/uploads/video/default_ad.mp4';
+
+        if (!file_exists($defaultAdPath)) {
+            debug_log("Default ad not found: $defaultAdPath");
+            // Создаем пустой файл как заглушку
+            $filename = sprintf("%05d", $counter) . '.mp4';
+            $newPath = $tempDir . '/' . $filename;
+            file_put_contents($newPath, '');
+            debug_log("Created empty placeholder: $newPath");
+            return $newPath;
+        }
+
+        $filename = sprintf("%05d", $counter) . '.mp4';
+        $newPath = $tempDir . '/' . $filename;
+
+        if (copy($defaultAdPath, $newPath)) {
+            debug_log("Copied default ad to: $newPath");
+            return $newPath;
+        }
+
+        debug_log("Failed to copy default ad to: $newPath");
+        return null;
+    }
 }
 ?>

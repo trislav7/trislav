@@ -16,4 +16,11 @@ function safe_upper($string) {
 function safe_lower($string) {
     return $string ? strtolower($string) : '';
 }
+
+function debug_log($message) {
+    $logFile = ROOT_PATH . '/debug.log';
+    $timestamp = date('Y-m-d H:i:s');
+    $logMessage = "[$timestamp] $message\n";
+    file_put_contents($logFile, $logMessage, FILE_APPEND | LOCK_EX);
+}
 ?>

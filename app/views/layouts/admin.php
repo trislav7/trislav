@@ -113,6 +113,13 @@
                 <i class="fas fa-building w-5 mr-3"></i>
                 Требования
             </a>
+            <a href="/admin.php?action=trislav_shopping_centers" class="flex items-center py-3 px-4 text-light hover:bg-highlight/20 hover:text-highlight rounded-lg transition-all duration-300">
+                <i class="fas fa-store w-5 mr-3"></i> Торговые центры
+            </a>
+            <a href="/admin.php?action=video_schedule" class="flex items-center py-3 px-4 text-light hover:bg-highlight/20 hover:text-highlight rounded-lg transition-all duration-300 <?= (($current_action ?? '') == 'ai_assistant') ? 'active-menu' : '' ?>">
+                <i class="fas fa-robot w-5 mr-3"></i>
+                Сетка показов
+            </a>
             <a href="/admin.php?action=ai_assistant" class="flex items-center py-3 px-4 text-light hover:bg-highlight/20 hover:text-highlight rounded-lg transition-all duration-300 <?= (($current_action ?? '') == 'ai_assistant') ? 'active-menu' : '' ?>">
                 <i class="fas fa-robot w-5 mr-3"></i>
                 AI Ассистент

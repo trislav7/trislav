@@ -107,5 +107,39 @@ class TrislavGroupClientProject extends Model {
         ORDER BY id DESC LIMIT 1
     ", [$clientId, $projectId]);
     }
+
+    public function getByShoppingCenter($shoppingCenterId) {
+        debug_log("Getting connections for shopping center: " . $shoppingCenterId);
+
+        try {
+            // Используем правильное имя таблицы - БЕЗ 's' на конце
+            $tableName = 'trislav_group_client_project';
+
+            debug_log("Using table: " . $tableName);
+
+            // Правильный запрос с существующими полями
+            $result = $this->db->fetchAll("
+                SELECT * 
+                FROM " . $tableName . " 
+                WHERE id_shopping_center = ? 
+                AND (video_filename IS NOT NULL OR yandex_disk_path IS NOT NULL)
+                ORDER BY id
+            ", [$shoppingCenterId]);
+
+            debug_log("Found " . count($result) . " video connections for shopping center " . $shoppingCenterId);
+
+            // Отладочная информация о найденных видео
+            foreach ($result as $item) {
+                debug_log("Video found - filename: " . ($item['video_filename'] ?? 'null') .
+                    ", yandex_path: " . ($item['yandex_disk_path'] ?? 'null'));
+            }
+
+            return $result;
+
+        } catch (Exception $e) {
+            debug_log("SQL Error in getByShoppingCenter: " . $e->getMessage());
+            return [];
+        }
+    }
 }
 ?>
