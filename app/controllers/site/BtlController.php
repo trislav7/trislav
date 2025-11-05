@@ -1,20 +1,40 @@
 <?php
 class BtlController extends Controller {
     public function index() {
+        debug_log("BtlController::index called");
+
         $serviceModel = new Service();
-        $advantageModel = new LedAdvantage();
         $portfolioModel = new Portfolio();
+        $settingModel = new SiteSetting();
 
-        $services = $serviceModel->getActiveByCategory('btl');
-        $advantages = $advantageModel->getActiveByCategory('btl');
-        $portfolio = $portfolioModel->getForSlider('btl', 4);
+        try {
+            debug_log("Fetching BTL services");
+            $services = $serviceModel->getActiveByCategory('btl');
+            debug_log("Found " . count($services) . " BTL services");
 
-        $this->view('site/btl', [
-            'services' => $services,
-            'advantages' => $advantages,
-            'portfolio' => $portfolio,
-            'title' => 'BTL Мероприятия | Трислав Медиа'
-        ]);
+            debug_log("Fetching BTL portfolio for slider");
+            $sliderPortfolio = $portfolioModel->getForSlider('btl', 4);
+            debug_log("Found " . count($sliderPortfolio) . " portfolio items for slider");
+
+            debug_log("Fetching all BTL portfolio");
+            $portfolio = $portfolioModel->getByCategory('btl');
+            debug_log("Found " . count($portfolio) . " total portfolio items");
+
+            $data = [
+                'services' => $services,
+                'portfolio' => $portfolio,
+                'slider_portfolio' => $sliderPortfolio,
+                'settings' => $settingModel->getAllSettings(),
+                'title' => 'BTL-мероприятия - Трислав Медиа'
+            ];
+
+            debug_log("Rendering BTL view");
+            $this->view('site/btl', $data);
+
+        } catch (Exception $e) {
+            debug_log("ERROR in BtlController: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function submitForm() {

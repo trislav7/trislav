@@ -40,6 +40,10 @@ if (!file_exists($configFile)) {
 }
 require_once $configFile;
 
+// 🔥 НОВЫЙ КОД: Подключаем и запускаем CacheMiddleware
+require_once ROOT_PATH . '/app/core/CacheMiddleware.php';
+CacheMiddleware::handle();
+
 // Создаем роутер
 $router = new Router();
 

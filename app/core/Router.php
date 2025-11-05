@@ -22,6 +22,10 @@ class Router {
         // Убираем query параметры
         $requestPath = parse_url($requestUri, PHP_URL_PATH);
 
+        if (isset($_GET['no-cache'])) {
+            $this->clearPageCache($requestPath);
+        }
+
         foreach ($this->routes as $index => $route) {
             // ВАЖНО: обрабатываем HEAD запросы так же как GET
             $routeMethod = $route['method'];
@@ -121,6 +125,21 @@ class Router {
         exit;
     }
 
+    private function clearPageCache($pagePath) {
+        $cache = new Cache();
+
+        // Генерируем ключи кэша для этой страницы
+        $cacheKeys = $this->generateCacheKeysForPage($pagePath);
+
+        foreach ($cacheKeys as $key) {
+            $cache->delete($key);
+        }
+
+        // Также очищаем общий кэш если нужно
+        $cache->clearByPattern($pagePath);
+    }
+
+
     private function showMinimal404() {
         echo "<!DOCTYPE html>
         <html>
@@ -163,5 +182,22 @@ class Router {
             </div>
         </body>
         </html>";
+    }
+
+    private function generateCacheKeysForPage($pagePath) {
+        $keys = [];
+
+        // Базовый ключ для страницы
+        $baseKey = 'page_' . md5($pagePath);
+        $keys[] = $baseKey;
+
+        // Ключи для различных компонентов
+        $components = ['services', 'portfolio', 'tariffs', 'projects', 'clients', 'reviews'];
+        foreach ($components as $component) {
+            $keys[] = "all_active_{$component}";
+            $keys[] = "{$component}_*";
+        }
+
+        return $keys;
     }
 }
