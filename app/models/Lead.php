@@ -29,16 +29,16 @@ class Lead extends Model {
 
     public function findWithDetails($id) {
         return $this->db->fetch("
-            SELECT l.*, 
-                   p.title as project_title,
-                   p.id as project_id,
-                   s.title as service_title,
-                   s.id as service_id
-            FROM leads l 
-            LEFT JOIN trislav_group_projects p ON l.project_id = p.id 
-            LEFT JOIN services s ON l.service_id = s.id 
-            WHERE l.id = ?
-        ", [$id]);
+        SELECT l.*, 
+               p.title as project_title,
+               p.id as project_id,
+               s.title as service_title,
+               s.id as service_id
+        FROM leads l 
+        LEFT JOIN trislav_group_projects p ON l.project_id = p.id 
+        LEFT JOIN services s ON l.service_id = s.id 
+        WHERE l.id = ?
+    ", [$id]);
     }
 
     public function getLeadServices($leadId) {
@@ -69,6 +69,28 @@ class Lead extends Model {
             "UPDATE leads SET status = 'processed' WHERE id = ?",
             [$id]
         );
+    }
+
+    public function getServiceTypes() {
+        return $this->db->fetchAll("
+        SELECT DISTINCT service_type 
+        FROM leads 
+        WHERE service_type IS NOT NULL AND service_type != '' 
+        ORDER BY service_type
+    ");
+    }
+
+    public function getByServiceType($serviceType) {
+        return $this->db->fetchAll("
+        SELECT l.*, 
+               p.title as project_title, 
+               s.title as service_title 
+        FROM leads l 
+        LEFT JOIN trislav_group_projects p ON l.project_id = p.id 
+        LEFT JOIN services s ON l.service_id = s.id 
+        WHERE l.service_type = ?
+        ORDER BY l.created_at DESC
+    ", [$serviceType]);
     }
 }
 ?>

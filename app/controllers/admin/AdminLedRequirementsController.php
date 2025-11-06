@@ -6,7 +6,7 @@ class AdminLedRequirementsController extends AdminBaseController {
         $requirements = $requirementModel->getAll();
 
         $this->view('admin/led_requirements', [
-            'title' => 'Управление требованиями LED',
+            'title' => 'Управление требованиями',
             'requirements' => $requirements,
             'current_action' => 'led_requirements'
         ]);

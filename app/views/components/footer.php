@@ -1,6 +1,6 @@
 <footer class="bg-[#0d0d1a] py-12 lg:py-16 px-4">
     <div class="container mx-auto max-w-6xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 mb-8">
             <div class="footer-column">
                 <h3 class="w-40 mb-6"><img src="/images/tm_.png" /></h3>
                 <p class="text-gray-400 mb-6 leading-relaxed">
@@ -40,17 +40,6 @@
                 </ul>
             </div>
 
-            <div class="footer-column">
-                <h3 class="text-xl font-bold text-highlight mb-6">Подписка</h3>
-                <p class="text-gray-400 mb-4">Будьте в курсе наших новостей и акций</p>
-                <form action="/subscribe" method="POST" class="flex">
-                    <input type="email" name="email" placeholder="Ваш email" required
-                           class="flex-grow px-4 py-2 bg-white/10 border border-white/20 rounded-l-lg text-light focus:outline-none focus:border-highlight">
-                    <button type="submit" class="bg-highlight text-primary px-4 rounded-r-lg font-semibold transition-colors duration-300 hover:bg-opacity-90">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </form>
-            </div>
         </div>
 
         <div class="copyright text-center pt-8 border-t border-gray-800">

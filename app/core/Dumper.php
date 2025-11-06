@@ -83,19 +83,19 @@ class Dumper {
 }
 
 // Глобальные функции-хелперы
-if (!function_exists('dump')) {
+//if (!function_exists('dump')) {
     function dump(...$vars) {
         foreach ($vars as $var) {
             Dumper::_dump($var);
         }
     }
-}
+//}
 
-if (!function_exists('d')) {
+//if (!function_exists('d')) {
     function d(...$vars) {
         foreach ($vars as $var) {
             Dumper::_dump($var);
         }
         exit;
     }
-}
+//}

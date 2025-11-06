@@ -102,8 +102,9 @@ class TrislavGroupClientProject extends Model {
     public function findByClientAndProject($clientId, $projectId) {
         return $this->db->fetch("
         SELECT * FROM {$this->table} 
-        WHERE id_client = ? AND id_project = ?
-        ORDER BY id DESC LIMIT 1
+        WHERE id_client = ? AND id_project = ? 
+        ORDER BY id DESC 
+        LIMIT 1
     ", [$clientId, $projectId]);
     }
 
@@ -126,6 +127,43 @@ class TrislavGroupClientProject extends Model {
         } catch (Exception $e) {
             return [];
         }
+    }
+
+    public function clients_delete() {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $clientModel = new TrislavGroupClient();
+            $connectionModel = new TrislavGroupClientProject();
+
+            debug_log("Starting deletion of client ID: " . $id);
+
+            // Получаем все связи клиента
+            $connections = $connectionModel->getByClient($id);
+            debug_log("Found " . count($connections) . " connections for client");
+
+            // Удаляем видеофайлы всех связей
+            foreach ($connections as $connection) {
+                debug_log("Deleting video files for connection ID: " . $connection['id']);
+                $this->deleteVideoFile(
+                    $connection['video_filename'] ?? null,
+                    $connection['yandex_disk_path'] ?? null
+                );
+            }
+
+            // Удаляем изображение клиента если есть
+            $client = $clientModel->find($id);
+            if ($client && !empty($client['image_url'])) {
+                debug_log("Deleting client image: " . $client['image_url']);
+                $clientModel->deleteOldImage($client['image_url']);
+            }
+
+            // Удаляем клиента (связи удалятся каскадом благодаря внешним ключам)
+            $clientModel->delete($id);
+
+            debug_log("Client deletion completed for ID: " . $id);
+        }
+        header('Location: /admin.php?action=trislav_clients&success=1');
+        exit;
     }
 }
 ?>

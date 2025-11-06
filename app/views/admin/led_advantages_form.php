@@ -21,6 +21,8 @@ $current_category = $current_category ?? 'led';
                         <select name="category" required class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight">
                             <option value="led" <?= (isset($item['category']) ? $item['category'] : $current_category) === 'led' ? 'selected' : '' ?>>LED преимущества</option>
                             <option value="btl" <?= (isset($item['category']) ? $item['category'] : $current_category) === 'btl' ? 'selected' : '' ?>>BTL преимущества</option>
+                            <option value="trislav_group" <?= (isset($item['category']) ? $item['category'] : $current_category) === 'trislav_group' ? 'selected' : '' ?>>Трислав Групп</option>
+                            <option value="trislav_media" <?= (isset($item['category']) ? $item['category'] : $current_category) === 'trislav_media' ? 'selected' : '' ?>>Трислав Медиа</option>
                         </select>
                     </div>
                 </div>

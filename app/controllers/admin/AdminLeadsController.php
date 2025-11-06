@@ -1,12 +1,23 @@
 <?php
 class AdminLeadsController extends AdminBaseController {
 
+
     public function list() {
         $leadModel = new Lead();
-        $leads = $leadModel->getAll();
+
+        // Получаем выбранный фильтр
+        $filter = $_GET['filter'] ?? 'all';
+
+        // Получаем лиды
+        if ($filter === 'all') {
+            $leads = $leadModel->getAll();
+        } else {
+            $leads = $leadModel->getByServiceType($filter);
+        }
 
         $this->view('admin/leads_list', [
             'leads' => $leads,
+            'current_filter' => $filter,
             'title' => 'Управление заявками'
         ]);
     }
@@ -21,9 +32,16 @@ class AdminLeadsController extends AdminBaseController {
         $leadModel = new Lead();
         $lead = $leadModel->find($id);
 
+        $tariff = null;
+        if (!empty($lead['tariff_id'])) {
+            $tariffModel = new Tariff();
+            $tariff = $tariffModel->find($lead['tariff_id']);
+        }
+
         $this->view('admin/leads_detail', [
+            'title' => 'Детали заявки #' . $lead['id'],
             'lead' => $lead,
-            'title' => 'Заявка #' . $lead['id']
+            'tariff' => $tariff
         ]);
     }
 
@@ -36,5 +54,17 @@ class AdminLeadsController extends AdminBaseController {
 
         header('Location: /admin.php?action=leads_list&success=1');
         exit;
+    }
+
+    public function getServiceTypeLabel($serviceType) {
+        $labels = [
+            'trislav_group_general' => 'Трислав Групп',
+            'led' => 'LED Экраны',
+            'btl' => 'BTL Мероприятия',
+            'video' => 'Видео и Лого',
+            'general' => 'Трислав Медиа (главная)'
+        ];
+
+        return $labels[$serviceType] ?? $serviceType;
     }
 }

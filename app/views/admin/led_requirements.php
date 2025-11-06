@@ -5,7 +5,7 @@ $success = $_GET['success'] ?? false;
 
 <div class="space-y-6">
     <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-highlight">Управление требованиями LED</h1>
+        <h1 class="text-3xl font-bold text-highlight">Управление требованиями</h1>
         <a href="/admin.php?action=led_requirements_create" class="bg-highlight text-primary font-semibold py-2 px-4 rounded-lg border-2 border-highlight transition-all duration-300 hover:bg-transparent hover:text-highlight no-underline">
             + Добавить требование
         </a>

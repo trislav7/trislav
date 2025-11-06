@@ -7,7 +7,7 @@ class AdminLedAdvantagesController extends AdminBaseController {
         $advantages = $advantageModel->getByCategory($category);
 
         $this->view('admin/led_advantages', [
-            'title' => 'Управление преимуществами ' . strtoupper($category),
+            'title' => 'Управление преимуществами',
             'advantages' => $advantages,
             'current_action' => 'led_advantages',
             'current_category' => $category
@@ -35,7 +35,7 @@ class AdminLedAdvantagesController extends AdminBaseController {
         }
 
         $this->view('admin/led_advantages_form', [
-            'title' => 'Добавить преимущество ' . strtoupper($category),
+            'title' => 'Добавить преимущество',
             'current_action' => 'led_advantages',
             'current_category' => $category,
             'item' => null
@@ -75,7 +75,7 @@ class AdminLedAdvantagesController extends AdminBaseController {
         }
 
         $this->view('admin/led_advantages_form', [
-            'title' => 'Редактировать преимущество ' . strtoupper($category),
+            'title' => 'Редактировать преимущество',
             'current_action' => 'led_advantages',
             'current_category' => $category,
             'item' => $item

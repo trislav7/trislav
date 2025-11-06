@@ -75,6 +75,12 @@ if (!headers_sent()) {
     http_response_code(200);
 }
 
+// В /index.php после подключения Router добавим:
+debug_log("=== FORM SUBMISSION DEBUG ===");
+debug_log("REQUEST METHOD: " . $_SERVER['REQUEST_METHOD']);
+debug_log("REQUEST URI: " . $_SERVER['REQUEST_URI']);
+debug_log("POST DATA: " . json_encode($_POST));
+
 // Запускаем маршрутизацию
 $router->route();
 ?>

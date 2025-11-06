@@ -17,5 +17,12 @@ class LedRequirement extends Model {
             ORDER BY type, sort_order
         ");
     }
+
+    public function getAll() {
+        return $this->db->fetchAll("
+            SELECT * FROM {$this->table} 
+            ORDER BY type, sort_order
+        ");
+    }
 }
 ?>

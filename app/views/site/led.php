@@ -206,7 +206,8 @@
         <div class="container mx-auto max-w-4xl">
             <div class="contact-form bg-white/5 p-8 rounded-xl">
                 <h3 class="text-2xl font-bold text-highlight mb-6">Оставить заявку на LED-рекламу</h3>
-                <form action="/led/submit" method="POST">
+                <form method="POST" id="contactForm">
+                    <input type="hidden" name="source" value="led">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div class="form-group">
                             <label for="name" class="block mb-2 font-medium">Ваше имя *</label>
@@ -231,14 +232,20 @@
                                    class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight">
                         </div>
                     </div>
+
                     <div class="form-group mb-6">
-                        <label for="budget" class="block mb-2 font-medium">Примерный бюджет</label>
-                        <select id="budget" name="budget" class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight">
-                            <option value="">Выберите бюджет</option>
-                            <option value="low">до 50 000 ₽</option>
-                            <option value="medium">50 000 - 150 000 ₽</option>
-                            <option value="high">150 000 - 500 000 ₽</option>
-                            <option value="premium">свыше 500 000 ₽</option>
+                        <label for="tariff_id" class="block mb-2 font-medium">Выберите тариф</label>
+                        <select id="tariff_id" name="tariff_id" class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight">
+                            <option value="">Выберите тариф</option>
+                            <?php if (!empty($tariffs) && is_array($tariffs)): ?>
+                                <?php foreach ($tariffs as $tariff): ?>
+                                    <?php if ($tariff['is_active']): ?>
+                                        <option value="<?= $tariff['id'] ?>">
+                                            <?= htmlspecialchars($tariff['title']) ?> - <?= htmlspecialchars($tariff['price']) ?> ₽
+                                        </option>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </select>
                     </div>
                     <div class="form-group mb-6">
@@ -266,6 +273,164 @@
             </div>
         </div>
     </section>
+
+    <!-- КРАСИВЫЙ ПОПАП УСПЕХА -->
+    <div id="successPopup" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+        <div class="bg-gradient-to-br from-primary to-secondary rounded-2xl p-8 mx-4 max-w-md w-full border-2 border-highlight/50">
+            <div class="text-center">
+                <!-- Анимированная иконка -->
+                <div class="w-20 h-20 bg-highlight/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10 text-highlight" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+
+                <h3 class="text-2xl font-bold text-highlight mb-4">Спасибо за вашу заявку!</h3>
+                <p class="text-light mb-6">
+                    Мы свяжемся с вами в ближайшее время для обсуждения LED-рекламы.
+                </p>
+
+                <button onclick="closeSuccessPopup()"
+                        class="bg-highlight text-primary font-semibold py-3 px-8 rounded-lg transition-all duration-300 hover:bg-transparent hover:text-highlight border-2 border-highlight">
+                    Понятно
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ПОПАП ДЛЯ ОШИБОК -->
+    <div id="errorPopup" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+        <div class="bg-gradient-to-br from-red-900 to-red-700 rounded-2xl p-8 mx-4 max-w-md w-full border-2 border-red-500/50">
+            <div class="text-center">
+                <!-- Иконка ошибки -->
+                <div class="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+
+                <h3 class="text-2xl font-bold text-red-400 mb-4">Ошибка отправки</h3>
+                <p class="text-light mb-6">
+                    Произошла ошибка при отправке формы. Пожалуйста, попробуйте еще раз.
+                </p>
+
+                <button onclick="closeErrorPopup()"
+                        class="bg-red-500 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300 hover:bg-transparent hover:text-red-400 border-2 border-red-500">
+                    Понятно
+                </button>
+            </div>
+        </div>
+    </div>
+    <style>
+        select option {
+            background: #1a1a2e !important;
+            color: #f1f1f1 !important;
+            padding: 12px;
+        }
+
+        select:focus option {
+            background: #16213e !important;
+        }
+
+        /* Кастомный скроллбар для селекта */
+        select::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        select::-webkit-scrollbar-track {
+            background: #16213e;
+            border-radius: 4px;
+        }
+
+        select::-webkit-scrollbar-thumb {
+            background: #00b7c2;
+            border-radius: 4px;
+        }
+    </style>
+    <script>
+        // Функции для успешного попапа
+        function showSuccessPopup() {
+            const popup = document.getElementById('successPopup');
+            popup.classList.remove('hidden');
+        }
+
+        function closeSuccessPopup() {
+            const popup = document.getElementById('successPopup');
+            popup.classList.add('hidden');
+        }
+
+        // Функции для попапа с ошибкой
+        function showErrorPopup() {
+            const popup = document.getElementById('errorPopup');
+            popup.classList.remove('hidden');
+        }
+
+        function closeErrorPopup() {
+            const popup = document.getElementById('errorPopup');
+            popup.classList.add('hidden');
+        }
+
+        // Обработка формы с AJAX
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+
+            // Показываем индикатор загрузки
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Отправка...';
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+
+            fetch('/led/submit', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Показываем красивый попап УСПЕХА
+                        showSuccessPopup();
+                        // Сбрасываем форму
+                        this.reset();
+                    } else {
+                        // Показываем попап ОШИБКИ
+                        showErrorPopup();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Показываем попап ОШИБКИ
+                    showErrorPopup();
+                })
+                .finally(() => {
+                    // Восстанавливаем кнопку
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                });
+        });
+
+        // Закрытие попапов по клику на фон
+        document.getElementById('successPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSuccessPopup();
+            }
+        });
+
+        document.getElementById('errorPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeErrorPopup();
+            }
+        });
+
+        // Закрытие попапов по ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSuccessPopup();
+                closeErrorPopup();
+            }
+        });
+    </script>
 
 <?php
 $content = ob_get_clean();

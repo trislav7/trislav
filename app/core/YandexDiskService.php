@@ -209,5 +209,59 @@ class YandexDiskService {
             return false;
         }
     }
+
+    /**
+     * Переименовывает файл на Яндекс.Диске
+     */
+    public function renameFile($oldPath, $newPath) {
+        $url = $this->baseUrl . '/move?from=' . urlencode($oldPath) . '&path=' . urlencode($newPath) . '&overwrite=true';
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_HTTPHEADER => [
+                'Authorization: OAuth ' . $this->token,
+                'Content-Type: application/json'
+            ]
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        debug_log("Yandex Disk rename - from: $oldPath, to: $newPath, code: $httpCode");
+
+        return $httpCode === 201 || $httpCode === 200;
+    }
+
+    /**
+     * Удаляет файл с Яндекс.Диска
+     */
+    public function deleteFile($remotePath) {
+        $url = $this->baseUrl . '?path=' . urlencode($remotePath) . '&permanently=true';
+
+        debug_log("Yandex Disk DELETE request: " . $url);
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CUSTOMREQUEST => 'DELETE',
+            CURLOPT_HTTPHEADER => [
+                'Authorization: OAuth ' . $this->token
+            ]
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        debug_log("Yandex Disk delete response - path: $remotePath, code: $httpCode, error: " . ($error ?: 'none'));
+
+        return $httpCode === 204 || $httpCode === 202; // 204 - удалено, 202 - принято в обработку
+    }
 }
 ?>

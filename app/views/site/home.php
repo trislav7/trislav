@@ -25,234 +25,154 @@
         </div>
     </section>
 
-        <!-- Секция основных направлений -->
-    <section id="directions" class="py-20 px-4 bg-gradient-to-b from-primary to-secondary">
+    <section id="services" class="py-20 md:py-24 lg:py-28 bg-secondary px-4">
         <div class="container mx-auto max-w-6xl">
             <div class="text-center mb-16">
-                <h2 class="text-3xl lg:text-4xl font-bold text-light mb-4">
-                    Основные направления
+                <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 relative inline-block">
+                    Направления работы
+                    <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-highlight mt-4"></div>
                 </h2>
-                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-                    Комплексные решения для эффективного продвижения вашего бизнеса
+                <p class="text-lg md:text-xl text-gray-300 mt-8 max-w-2xl mx-auto">
+                    Мы предлагаем полный спектр рекламных услуг для вашего бизнеса
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                 <!-- LED экраны -->
-                <div class="group bg-secondary rounded-xl p-8 border border-highlight/30 hover:border-highlight/50 transition-all duration-500 hover:-translate-y-3 text-center">
-                    <div class="w-20 h-20 bg-gradient-to-br from-highlight to-accent rounded-full flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
-                        <svg class="w-10 h-10 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"></rect>
-                            <path d="M8 12H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-                            <path d="M12 8V16" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-                        </svg>
+                <div class="service-card bg-white/5 rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl h-full flex flex-col">
+                    <div class="service-image h-48 md:h-56 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1592861956120-8da6360a4c1b?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=800&amp;q=80" alt="LED экраны" class="w-full h-full object-cover transition-transform duration-500">
                     </div>
-
-                    <h3 class="text-2xl font-bold text-light mb-4 group-hover:text-highlight transition-colors duration-300">
-                        LED экраны
-                    </h3>
-
-                    <p class="text-gray-300 leading-relaxed mb-6">
-                        Размещение рекламы на цифровых экранах в торговых центрах и местах скопления целевой аудитории
-                    </p>
-
-                    <a href="/led" class="inline-block bg-highlight text-primary font-semibold py-3 px-6 rounded-lg border-2 border-highlight transition-all duration-300 hover:bg-transparent hover:text-highlight no-underline">
-                        Подробнее
-                    </a>
-                </div>
-
-                <!-- Видео и лого -->
-                <div class="group bg-secondary rounded-xl p-8 border border-highlight/30 hover:border-highlight/50 transition-all duration-500 hover:-translate-y-3 text-center">
-                    <div class="w-20 h-20 bg-gradient-to-br from-highlight to-accent rounded-full flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
-                        <svg class="w-10 h-10 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                            <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></rect>
-                        </svg>
+                    <div class="service-content p-6 flex-grow">
+                        <h3 class="text-xl md:text-2xl font-bold text-highlight mb-4">LED экраны в ТЦ</h3>
+                        <p class="text-gray-300 mb-4 leading-relaxed">
+                            Размещение рекламы на современных LED-экранах в крупнейших торговых центрах города с высоким трафиком.
+                        </p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check text-highlight mr-3"></i>
+                                Премиальные локации
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check text-highlight mr-3"></i>
+                                Высокое качество изображения
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check text-highlight mr-3"></i>
+                                Аналитика эффективности
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check text-highlight mr-3"></i>
+                                Гибкие тарифы
+                            </li>
+                        </ul>
                     </div>
-
-                    <h3 class="text-2xl font-bold text-light mb-4 group-hover:text-highlight transition-colors duration-300">
-                        Видео и лого
-                    </h3>
-
-                    <p class="text-gray-300 leading-relaxed mb-6">
-                        Создание профессионального визуального контента: видеоролики, логотипы, брендинг и полиграфия
-                    </p>
-
-                    <a href="/video" class="inline-block bg-highlight text-primary font-semibold py-3 px-6 rounded-lg border-2 border-highlight transition-all duration-300 hover:bg-transparent hover:text-highlight no-underline">
-                        Подробнее
-                    </a>
                 </div>
 
                 <!-- BTL мероприятия -->
-                <div class="group bg-secondary rounded-xl p-8 border border-highlight/30 hover:border-highlight/50 transition-all duration-500 hover:-translate-y-3 text-center">
-                    <div class="w-20 h-20 bg-gradient-to-br from-highlight to-accent rounded-full flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
-                        <svg class="w-10 h-10 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                            <path d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                            <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                            <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                        </svg>
+                <div class="service-card bg-white/5 rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl h-full flex flex-col">
+                    <div class="service-image h-48 md:h-56 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1531058020387-3be344556be6?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=800&amp;q=80" alt="BTL мероприятия" class="w-full h-full object-cover transition-transform duration-500">
                     </div>
+                    <div class="service-content p-6 flex-grow">
+                        <h3 class="text-xl md:text-2xl font-bold text-highlight mb-4">BTL мероприятия</h3>
+                        <p class="text-gray-300 mb-4 leading-relaxed">
+                            Организация и проведение промо-акций, дегустаций, концертов и других мероприятий для прямого контакта с потребителем.
+                        </p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check text-highlight mr-3"></i>
+                                Раздача листовок и промо-материалов
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check text-highlight mr-3"></i>
+                                Организация мероприятий
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check text-highlight mr-3"></i>
+                                Дегустации и промо-акции
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check text-highlight mr-3"></i>
+                                Концерты и шоу-программы
+                            </li>
+                        </ul>
+                    </div>
+                </div>
 
-                    <h3 class="text-2xl font-bold text-light mb-4 group-hover:text-highlight transition-colors duration-300">
-                        BTL мероприятия
-                    </h3>
-
-                    <p class="text-gray-300 leading-relaxed mb-6">
-                        Организация промо-акций, ивентов и мероприятий для прямого взаимодействия с целевой аудиторией
-                    </p>
-
-                    <a href="/btl" class="inline-block bg-highlight text-primary font-semibold py-3 px-6 rounded-lg border-2 border-highlight transition-all duration-300 hover:bg-transparent hover:text-highlight no-underline">
-                        Подробнее
-                    </a>
+                <!-- Видеоролики и логотипы -->
+                <div class="service-card bg-white/5 rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl h-full flex flex-col">
+                    <div class="service-image h-48 md:h-56 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=800&amp;q=80" alt="Видеопроизводство" class="w-full h-full object-cover transition-transform duration-500">
+                    </div>
+                    <div class="service-content p-6 flex-grow">
+                        <h3 class="text-xl md:text-2xl font-bold text-highlight mb-4">Видеоролики и логотипы</h3>
+                        <p class="text-gray-300 mb-4 leading-relaxed">
+                            Профессиональное создание рекламных роликов, корпоративных видео и разработка уникальных логотипов.
+                        </p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check text-highlight mr-3"></i>
+                                Рекламные видеоролики
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check text-highlight mr-3"></i>
+                                Корпоративные видео
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check text-highlight mr-3"></i>
+                                Разработка логотипов
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-check text-highlight mr-3"></i>
+                                Брендинг и айдентика
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- Последние работы -->
-    <section class="py-16 bg-primary px-4">
+    <!-- Блок "Наши преимущества" для Трислав Медиа -->
+<?php if (!empty($advantages) && is_array($advantages)): ?>
+    <section id="advantages" class="py-20 md:py-24 lg:py-28 bg-primary px-4">
         <div class="container mx-auto max-w-6xl">
             <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">Наши работы</h2>
-                <p class="text-lg text-gray-300 max-w-2xl mx-auto">Примеры успешных проектов для наших клиентов</p>
-            </div>
-
-            <?php if (!empty($portfolio) && is_array($portfolio)): ?>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <?php foreach ($portfolio as $item): ?>
-                        <div class="portfolio-item bg-white/5 rounded-xl overflow-hidden transition-all duration-300 hover:transform hover:scale-105">
-                            <div class="h-48 bg-gradient-to-br from-accent to-highlight flex items-center justify-center">
-                                <span class="text-white text-xl font-bold text-center px-4"><?= htmlspecialchars($item['title'] ?? '') ?></span>
-                            </div>
-                            <div class="p-6">
-                                <h3 class="text-xl font-bold text-highlight mb-2"><?= htmlspecialchars($item['client_name'] ?? '') ?></h3>
-                                <p class="text-gray-300 mb-4"><?= htmlspecialchars(substr($item['description'] ?? '', 0, 100)) ?>...</p>
-                                <div class="flex flex-wrap gap-2">
-                                    <?php
-                                    $tags = isset($item['tags']) ? json_decode($item['tags'], true) : [];
-                                    if (is_array($tags)) {
-                                        foreach (array_slice($tags, 0, 3) as $tag):
-                                            ?>
-                                            <span class="bg-highlight/20 text-highlight px-2 py-1 rounded text-xs"><?= htmlspecialchars($tag) ?></span>
-                                        <?php
-                                        endforeach;
-                                    }
-                                    ?>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div class="text-center py-8">
-                    <p class="text-gray-400">Работы временно недоступны</p>
-                </div>
-            <?php endif; ?>
-        </div>
-    </section>
-
-    <!-- Блок "Почему именно мы" для Трислав Медиа -->
-    <section id="why-us" class="py-20 px-4 bg-gradient-to-b from-primary to-[#0a0a1a]">
-        <div class="container mx-auto max-w-6xl">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl lg:text-4xl font-bold text-light mb-4">
-                    Почему выбирают Трислав Медиа?
+                <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 relative inline-block text-light">
+                    Наши преимущества
+                    <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-highlight mt-4"></div>
                 </h2>
-                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-                    Мы создаем точечную рекламу, которая доходит до потребителя и приносит реальные результаты
+                <p class="text-lg md:text-xl text-gray-300 mt-8 max-w-2xl mx-auto">
+                    Почему выбирают именно нас
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <?php if (!empty($advantages) && is_array($advantages)): ?>
-                    <?php foreach ($advantages as $advantage): ?>
-                        <?php if ($advantage['is_active']): ?>
-                            <div class="group bg-[#0a0a1a] rounded-xl p-8 border border-highlight/20 hover:border-highlight/50 transition-all duration-500 hover:-translate-y-3">
-                                <div class="w-16 h-16 bg-gradient-to-br from-highlight to-accent rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                                    <?php if ($advantage['icon_class']): ?>
-                                        <i class="<?= htmlspecialchars($advantage['icon_class']) ?> text-primary text-xl font-bold"></i>
-                                    <?php else: ?>
-                                        <i class="fas fa-star text-primary text-xl"></i>
-                                    <?php endif; ?>
-                                </div>
-
-                                <h3 class="text-xl font-bold text-light mb-4 group-hover:text-highlight transition-colors duration-300">
-                                    <?= htmlspecialchars($advantage['title']) ?>
-                                </h3>
-
-                                <?php if ($advantage['description']): ?>
-                                    <p class="text-gray-300 leading-relaxed group-hover:text-light transition-colors duration-300">
-                                        <?= htmlspecialchars($advantage['description']) ?>
-                                    </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+                <?php foreach ($advantages as $advantage): ?>
+                    <?php if ($advantage['is_active']): ?>
+                        <div class="advantage-card text-center p-6 lg:p-8 bg-white/5 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:bg-white/10">
+                            <div class="advantage-icon text-5xl text-highlight mb-6">
+                                <?php if (!empty($advantage['icon_class'])): ?>
+                                    <i class="<?= htmlspecialchars($advantage['icon_class']) ?>"></i>
+                                <?php elseif (!empty($advantage['icon_svg'])): ?>
+                                    <?= $advantage['icon_svg'] ?>
+                                <?php else: ?>
+                                    <i class="fas fa-star"></i>
                                 <?php endif; ?>
                             </div>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <!-- Преимущества по умолчанию для Трислав Медиа -->
-                    <?php
-                    $defaultMediaAdvantages = [
-                            [
-                                    'title' => 'Мы создаем поток клиентов',
-                                    'description' => 'Эффективные рекламные кампании, которые приносят реальных клиентов и увеличивают продажи',
-                                    'icon' => 'fas fa-chart-line'
-                            ],
-                            [
-                                    'title' => 'Команда профессионалов',
-                                    'description' => 'Сертифицированные специалисты с подтверждённым опытом успешных рекламных кампаний',
-                                    'icon' => 'fas fa-users'
-                            ],
-                            [
-                                    'title' => 'Инновационные решения',
-                                    'description' => 'Первыми внедрили систему точечного таргетинга через digital-экраны в ключевых ТЦ города',
-                                    'icon' => 'fas fa-lightbulb'
-                            ],
-                            [
-                                    'title' => 'Точная аудитория',
-                                    'description' => 'Наши экраны размещены в местах максимального скопления вашей целевой аудитории',
-                                    'icon' => 'fas fa-bullseye'
-                            ],
-                            [
-                                    'title' => 'Аналитика в реальном времени',
-                                    'description' => 'Отслеживаем эффективность каждой кампании и корректируем стратегию для максимального результата',
-                                    'icon' => 'fas fa-chart-bar'
-                            ],
-                            [
-                                    'title' => 'Гарантированный результат',
-                                    'description' => 'Продуманная медиастратегия и точное размещение рекламы для достижения ваших целей',
-                                    'icon' => 'fas fa-award'
-                            ]
-                    ];
-                    ?>
-
-                    <?php foreach ($defaultMediaAdvantages as $advantage): ?>
-                        <div class="group bg-[#0a0a1a] rounded-xl p-8 border border-highlight/20 hover:border-highlight/50 transition-all duration-500 hover:-translate-y-3">
-                            <div class="w-16 h-16 bg-gradient-to-br from-highlight to-accent rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                                <i class="<?= $advantage['icon'] ?> text-primary text-xl font-bold"></i>
-                            </div>
-
-                            <h3 class="text-xl font-bold text-light mb-4 group-hover:text-highlight transition-colors duration-300">
-                                <?= $advantage['title'] ?>
+                            <h3 class="text-xl font-bold mb-4 text-light">
+                                <?= htmlspecialchars($advantage['title'] ?? 'Преимущество') ?>
                             </h3>
-
-                            <p class="text-gray-300 leading-relaxed group-hover:text-light transition-colors duration-300">
-                                <?= $advantage['description'] ?>
-                            </p>
+                            <?php if (!empty($advantage['description'])): ?>
+                                <p class="text-gray-300"><?= htmlspecialchars($advantage['description']) ?></p>
+                            <?php endif; ?>
                         </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-
-            <!-- CTA блок -->
-            <div class="text-center mt-16 pt-8 border-t border-highlight/20">
-                <p class="text-gray-300 text-lg mb-6">Готовы увеличить эффективность вашей рекламы?</p>
-                <a href="#contact" class="bg-highlight text-primary font-bold py-4 px-8 rounded-lg text-lg border-2 border-highlight hover:bg-transparent hover:text-highlight transition-all duration-300 no-underline inline-block">
-                    Начать сотрудничество
-                </a>
+                    <?php endif; ?>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
+<?php endif; ?>
 
     <!-- Контактная форма -->
     <section id="contact" class="py-16 bg-secondary px-4">
@@ -263,7 +183,8 @@
             </div>
 
             <div class="contact-form bg-white/5 p-8 rounded-xl">
-                <form action="/contact/submit" method="POST">
+                <form method="POST" id="contactForm">
+                    <input type="hidden" name="source" value="general">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div class="form-group">
                             <label for="name" class="block mb-2 font-medium">Ваше имя *</label>
@@ -306,6 +227,139 @@
             </div>
         </div>
     </section>
+
+    <!-- КРАСИВЫЙ ПОПАП УСПЕХА -->
+    <div id="successPopup" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+        <div class="bg-gradient-to-br from-primary to-secondary rounded-2xl p-8 mx-4 max-w-md w-full border-2 border-highlight/50">
+            <div class="text-center">
+                <!-- Анимированная иконка -->
+                <div class="w-20 h-20 bg-highlight/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10 text-highlight" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+
+                <h3 class="text-2xl font-bold text-highlight mb-4">Спасибо за вашу заявку!</h3>
+                <p class="text-light mb-6">
+                    Мы свяжемся с вами в ближайшее время для обсуждения вашего проекта.
+                </p>
+
+                <button onclick="closeSuccessPopup()"
+                        class="bg-highlight text-primary font-semibold py-3 px-8 rounded-lg transition-all duration-300 hover:bg-transparent hover:text-highlight border-2 border-highlight">
+                    Понятно
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ПОПАП ДЛЯ ОШИБОК -->
+    <div id="errorPopup" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+        <div class="bg-gradient-to-br from-red-900 to-red-700 rounded-2xl p-8 mx-4 max-w-md w-full border-2 border-red-500/50">
+            <div class="text-center">
+                <!-- Иконка ошибки -->
+                <div class="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+
+                <h3 class="text-2xl font-bold text-red-400 mb-4">Ошибка отправки</h3>
+                <p class="text-light mb-6">
+                    Произошла ошибка при отправке формы. Пожалуйста, попробуйте еще раз.
+                </p>
+
+                <button onclick="closeErrorPopup()"
+                        class="bg-red-500 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300 hover:bg-transparent hover:text-red-400 border-2 border-red-500">
+                    Понятно
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Функции для успешного попапа
+        function showSuccessPopup() {
+            const popup = document.getElementById('successPopup');
+            popup.classList.remove('hidden');
+        }
+
+        function closeSuccessPopup() {
+            const popup = document.getElementById('successPopup');
+            popup.classList.add('hidden');
+        }
+
+        // Функции для попапа с ошибкой
+        function showErrorPopup() {
+            const popup = document.getElementById('errorPopup');
+            popup.classList.remove('hidden');
+        }
+
+        function closeErrorPopup() {
+            const popup = document.getElementById('errorPopup');
+            popup.classList.add('hidden');
+        }
+
+        // Обработка формы с AJAX
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+
+            // Показываем индикатор загрузки
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Отправка...';
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+
+            fetch('/contact/submit', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Показываем красивый попап УСПЕХА
+                        showSuccessPopup();
+                        // Сбрасываем форму
+                        this.reset();
+                    } else {
+                        // Показываем попап ОШИБКИ
+                        showErrorPopup();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Показываем попап ОШИБКИ
+                    showErrorPopup();
+                })
+                .finally(() => {
+                    // Восстанавливаем кнопку
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                });
+        });
+
+        // Закрытие попапов по клику на фон
+        document.getElementById('successPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSuccessPopup();
+            }
+        });
+
+        document.getElementById('errorPopup').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeErrorPopup();
+            }
+        });
+
+        // Закрытие попапов по ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSuccessPopup();
+                closeErrorPopup();
+            }
+        });
+    </script>
 
 <?php
 $content = ob_get_clean();

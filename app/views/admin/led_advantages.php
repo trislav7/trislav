@@ -19,6 +19,14 @@ $current_category = $current_category ?? 'led';
                        class="px-4 py-2 rounded-lg transition-all duration-300 no-underline <?= $current_category === 'btl' ? 'bg-highlight text-primary' : 'bg-primary/50 text-light hover:bg-primary' ?>">
                         BTL преимущества
                     </a>
+                    <a href="/admin.php?action=led_advantages&category=trislav_group"
+                       class="px-4 py-2 rounded-lg transition-all duration-300 no-underline <?= $current_category === 'trislav_group' ? 'bg-highlight text-primary' : 'bg-primary/50 text-light hover:bg-primary' ?>">
+                        Трислав Групп
+                    </a>
+                    <a href="/admin.php?action=led_advantages&category=trislav_media"
+                       class="px-4 py-2 rounded-lg transition-all duration-300 no-underline <?= $current_category === 'trislav_media' ? 'bg-highlight text-primary' : 'bg-primary/50 text-light hover:bg-primary' ?>">
+                        Трислав Медиа
+                    </a>
                 </div>
             </div>
             <a href="/admin.php?action=led_advantages_create&category=<?= $current_category ?>" class="bg-highlight text-primary font-semibold py-2 px-4 rounded-lg border-2 border-highlight transition-all duration-300 hover:bg-transparent hover:text-highlight no-underline">

@@ -1,5 +1,4 @@
 <?php
-error_log("AdminTrislavGroupController loaded");
 class AdminTrislavGroupController extends AdminBaseController {
 
     public function content() {
@@ -20,7 +19,6 @@ class AdminTrislavGroupController extends AdminBaseController {
         $this->view('admin/trislav_group_content', $data);
     }
 
-    // КЛИЕНТЫ
     public function clients() {
         $clientModel = new TrislavGroupClient();
         $clients = $clientModel->getAll();
@@ -44,6 +42,21 @@ class AdminTrislavGroupController extends AdminBaseController {
         $tariffs = $tariffModel->getActive();
 
         if ($_POST) {
+            $videoFileCount = 0;
+            if (!empty($_POST['connections']) && is_array($_POST['connections'])) {
+                foreach ($_POST['connections'] as $index => $connection) {
+                    if (!empty($_FILES['connections']['name'][$index]['video_file'])) {
+                        $videoFileCount++;
+                    }
+                }
+            }
+
+            if ($videoFileCount > 1) {
+                debug_log("Too many video files attempted: " . $videoFileCount);
+                header('Location: /admin.php?action=trislav_clients&error=too_many_videos');
+                exit;
+            }
+
             $clientModel = new TrislavGroupClient();
             $connectionModel = new TrislavGroupClientProject();
 
@@ -63,14 +76,16 @@ class AdminTrislavGroupController extends AdminBaseController {
             ];
 
             $clientId = $clientModel->create($data);
+            debug_log("Client created with ID: " . $clientId);
 
-            // 1. Сначала сохраняем связи БЕЗ видео (быстрая операция)
+            // 1. Сохраняем связи и получаем их ID
+            $connectionIds = [];
             if (!empty($_POST['connections']) && is_array($_POST['connections'])) {
                 foreach ($_POST['connections'] as $index => $connection) {
                     if (!empty($connection['project_id'])) {
                         $videoUrl = $connection['video_url'] ?? null;
 
-                        // Пока сохраняем без файлового видео
+                        // Сохраняем связь и получаем её ID
                         $connectionId = $connectionModel->addConnection(
                             $clientId,
                             $connection['project_id'],
@@ -81,11 +96,14 @@ class AdminTrislavGroupController extends AdminBaseController {
                             null, // video_filename - пока null
                             null  // yandex_disk_path - пока null
                         );
+
+                        $connectionIds[$index] = $connectionId;
+                        debug_log("Connection created with ID: " . $connectionId . " for project: " . $connection['project_id']);
                     }
                 }
             }
 
-            // 2. ТЕПЕРЬ обрабатываем загрузку видео файлов (долгая операция)
+            // 2. Обрабатываем загрузку видео файлов с правильными именами
             if (!empty($_POST['connections']) && is_array($_POST['connections'])) {
                 foreach ($_POST['connections'] as $index => $connection) {
                     if (!empty($_FILES['connections']['name'][$index]['video_file'])) {
@@ -97,13 +115,18 @@ class AdminTrislavGroupController extends AdminBaseController {
                             'size' => $_FILES['connections']['size'][$index]['video_file']
                         ];
 
-                        $videoResult = $this->handleVideoUpload($videoFile, $connection['shopping_center_id'] ?? null);
+                        // Используем ID связки для именования файла
+                        $connectionId = $connectionIds[$index] ?? null;
+                        debug_log("Processing video for connection ID: " . ($connectionId ?? 'NULL'));
+
+                        $videoResult = $this->handleVideoUpload($videoFile, $connection['shopping_center_id'] ?? null, $connectionId);
 
                         if ($videoResult) {
+                            debug_log("Video upload successful, filename: " . $videoResult['filename']);
+
                             // Обновляем связь с информацией о видео
                             $this->updateConnectionWithVideo(
-                                $clientId,
-                                $connection['project_id'],
+                                $connectionId,
                                 $videoResult['filename'],
                                 $videoResult['disk_path']
                             );
@@ -154,7 +177,21 @@ class AdminTrislavGroupController extends AdminBaseController {
         }
 
         if ($_POST) {
-            // Сохраняем существующие связи для проверки видео
+            $videoFileCount = 0;
+            if (!empty($_POST['connections']) && is_array($_POST['connections'])) {
+                foreach ($_POST['connections'] as $index => $connection) {
+                    if (!empty($_FILES['connections']['name'][$index]['video_file'])) {
+                        $videoFileCount++;
+                    }
+                }
+            }
+
+            if ($videoFileCount > 1) {
+                debug_log("Too many video files attempted: " . $videoFileCount);
+                header('Location: /admin.php?action=trislav_clients&error=too_many_videos');
+                exit;
+            }
+
             $connectionModel = new TrislavGroupClientProject();
             $existingConnections = $connectionModel->getByClient($id);
 
@@ -177,10 +214,8 @@ class AdminTrislavGroupController extends AdminBaseController {
 
             $clientModel->update($id, $data);
 
-            // 1. Сначала удаляем старые связи (быстрая операция)
-            $connectionModel->removeByClient($id);
-
-            // 2. Сохраняем новые связи БЕЗ видео (быстрая операция)
+            // 1. ОБНОВЛЯЕМ существующие связи вместо удаления
+            $connectionIds = [];
             if (!empty($_POST['connections']) && is_array($_POST['connections'])) {
                 foreach ($_POST['connections'] as $index => $connection) {
                     if (!empty($connection['project_id'])) {
@@ -198,22 +233,85 @@ class AdminTrislavGroupController extends AdminBaseController {
                             $yandexDiskPath = $existing['yandex_disk_path'] ?? null;
                         }
 
-                        // Пока сохраняем без обработки новых файлов
-                        $connectionId = $connectionModel->addConnection(
-                            $id,
-                            $connection['project_id'],
-                            $connection['service_id'] ?? null,
-                            $connection['shopping_center_id'] ?? null,
-                            $connection['tariff_id'] ?? null,
-                            $videoUrl,
-                            $videoFilename,
-                            $yandexDiskPath
-                        );
+                        // Если связка уже существует - ОБНОВЛЯЕМ её
+                        if (isset($existingConnections[$index]) && !empty($existingConnections[$index]['id'])) {
+                            $connectionId = $existingConnections[$index]['id'];
+
+                            // Если отмечено "удалить текущее видео" - удаляем файлы
+                            if ($removeVideo && isset($existingConnections[$index])) {
+                                $existing = $existingConnections[$index];
+                                $this->deleteVideoFile(
+                                    $existing['video_filename'] ?? null,
+                                    $existing['yandex_disk_path'] ?? null
+                                );
+                                $videoFilename = null;
+                                $yandexDiskPath = null;
+                                debug_log("Video files marked for deletion in connection: " . $connectionId);
+                            }
+
+                            $connectionModel->update($connectionId, [
+                                'id_project' => $connection['project_id'],
+                                'id_service' => $connection['service_id'] ?? null,
+                                'id_shopping_center' => $connection['shopping_center_id'] ?? null,
+                                'id_tariff' => $connection['tariff_id'] ?? null,
+                                'video' => $videoUrl,
+                                'video_filename' => $videoFilename,
+                                'yandex_disk_path' => $yandexDiskPath
+                            ]);
+
+                            $connectionIds[$index] = $connectionId;
+                            debug_log("Updated existing connection ID: " . $connectionId);
+                        } else {
+                            // Если связки нет - СОЗДАЕМ новую
+                            $connectionId = $connectionModel->addConnection(
+                                $id,
+                                $connection['project_id'],
+                                $connection['service_id'] ?? null,
+                                $connection['shopping_center_id'] ?? null,
+                                $connection['tariff_id'] ?? null,
+                                $videoUrl,
+                                $videoFilename,
+                                $yandexDiskPath
+                            );
+
+                            $connectionIds[$index] = $connectionId;
+                            debug_log("Created new connection ID: " . $connectionId);
+                        }
                     }
                 }
             }
 
-            // 3. ТЕПЕРЬ обрабатываем загрузку НОВЫХ видео файлов (долгая операция)
+            // 2. УДАЛЯЕМ связи, которые были удалены в форме
+            $existingConnectionIds = array_column($existingConnections, 'id');
+            $updatedConnectionIds = array_values($connectionIds);
+            $connectionsToDelete = array_diff($existingConnectionIds, $updatedConnectionIds);
+
+            foreach ($connectionsToDelete as $connectionIdToDelete) {
+                // Находим связку чтобы получить информацию о видео
+                $connectionToDelete = $connectionModel->find($connectionIdToDelete);
+                if ($connectionToDelete) {
+                    debug_log("Deleting connection ID: " . $connectionIdToDelete);
+                    debug_log("Connection video data - filename: " . ($connectionToDelete['video_filename'] ?? 'NULL') . ", yandex path: " . ($connectionToDelete['yandex_disk_path'] ?? 'NULL'));
+
+                    // Удаляем видеофайлы если есть
+                    if (!empty($connectionToDelete['video_filename']) || !empty($connectionToDelete['yandex_disk_path'])) {
+                        $this->deleteVideoFile(
+                            $connectionToDelete['video_filename'] ?? null,
+                            $connectionToDelete['yandex_disk_path'] ?? null
+                        );
+                        debug_log("Video files deleted for connection: " . $connectionIdToDelete);
+                    } else {
+                        debug_log("No video files to delete for connection: " . $connectionIdToDelete);
+                    }
+                } else {
+                    debug_log("Connection not found for deletion: " . $connectionIdToDelete);
+                }
+
+                $connectionModel->delete($connectionIdToDelete);
+                debug_log("Connection record deleted from database: " . $connectionIdToDelete);
+            }
+
+            // 3. Обрабатываем загрузку НОВЫХ видео файлов
             if (!empty($_POST['connections']) && is_array($_POST['connections'])) {
                 foreach ($_POST['connections'] as $index => $connection) {
                     if (!empty($_FILES['connections']['name'][$index]['video_file'])) {
@@ -225,13 +323,18 @@ class AdminTrislavGroupController extends AdminBaseController {
                             'size' => $_FILES['connections']['size'][$index]['video_file']
                         ];
 
-                        $videoResult = $this->handleVideoUpload($videoFile, $connection['shopping_center_id'] ?? null);
+                        // Используем ID связки для именования файла
+                        $connectionId = $connectionIds[$index] ?? null;
+                        debug_log("Processing video for connection ID: " . ($connectionId ?? 'NULL'));
+
+                        $videoResult = $this->handleVideoUpload($videoFile, $connection['shopping_center_id'] ?? null, $connectionId);
 
                         if ($videoResult) {
+                            debug_log("Video upload successful, filename: " . $videoResult['filename']);
+
                             // Обновляем связь с информацией о видео
                             $this->updateConnectionWithVideo(
-                                $id,
-                                $connection['project_id'],
+                                $connectionId,
                                 $videoResult['filename'],
                                 $videoResult['disk_path']
                             );
@@ -242,6 +345,10 @@ class AdminTrislavGroupController extends AdminBaseController {
 
             header('Location: /admin.php?action=trislav_clients&success=1');
             exit;
+        }
+
+        foreach ($connections as &$connection) {
+            $connection['show_video_fields'] = $this->shouldShowVideoFields($connection);
         }
 
         $this->view('admin/trislav_group_clients_form', [
@@ -270,7 +377,34 @@ class AdminTrislavGroupController extends AdminBaseController {
         $id = $_GET['id'] ?? null;
         if ($id) {
             $clientModel = new TrislavGroupClient();
+            $connectionModel = new TrislavGroupClientProject();
+
+            debug_log("Starting deletion of client ID: " . $id);
+
+            // Получаем все связи клиента
+            $connections = $connectionModel->getByClient($id);
+            debug_log("Found " . count($connections) . " connections for client");
+
+            // Удаляем видеофайлы всех связей
+            foreach ($connections as $connection) {
+                debug_log("Deleting video files for connection ID: " . $connection['id']);
+                $this->deleteVideoFile(
+                    $connection['video_filename'] ?? null,
+                    $connection['yandex_disk_path'] ?? null
+                );
+            }
+
+            // Удаляем изображение клиента если есть
+            $client = $clientModel->find($id);
+            if ($client && !empty($client['image_url'])) {
+                debug_log("Deleting client image: " . $client['image_url']);
+                $clientModel->deleteOldImage($client['image_url']);
+            }
+
+            // Удаляем клиента (связи удалятся каскадом благодаря внешним ключам)
             $clientModel->delete($id);
+
+            debug_log("Client deletion completed for ID: " . $id);
         }
         header('Location: /admin.php?action=trislav_clients&success=1');
         exit;
@@ -623,9 +757,14 @@ class AdminTrislavGroupController extends AdminBaseController {
     }
 
     /**
-     * Обработка загрузки видео файла с отладкой в файл
+     * Обработка загрузки видео файла с уникальным именем на основе ID связки
      */
-    private function handleVideoUpload($file, $shoppingCenterId = null) {
+    private function handleVideoUpload($file, $shoppingCenterId = null, $connectionId = null) {
+        debug_log("=== START VIDEO UPLOAD ===");
+        debug_log("Connection ID: " . ($connectionId ?? 'NULL'));
+        debug_log("Shopping Center ID: " . ($shoppingCenterId ?? 'NULL'));
+        debug_log("Original filename: " . $file['name']);
+
         if ($file['error'] === UPLOAD_ERR_OK) {
             // Временное сохранение файла
             $uploadDir = ROOT_PATH . '/uploads/videos/temp/';
@@ -634,11 +773,23 @@ class AdminTrislavGroupController extends AdminBaseController {
             }
 
             $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $safeName = preg_replace('/[^a-zA-Z0-9-_]/', '', pathinfo($file['name'], PATHINFO_FILENAME));
-            $filename = time() . '_' . $safeName . '.' . $extension;
+
+            // ГЕНЕРИРУЕМ УНИКАЛЬНОЕ ИМЯ НА ОСНОВЕ ID СВЯЗКИ
+            if ($connectionId) {
+                $filename = 'video_' . $connectionId . '.' . $extension;
+                debug_log("Using connection-based filename: " . $filename);
+            } else {
+                // Резервный вариант если ID связки еще нет
+                $safeName = preg_replace('/[^a-zA-Z0-9-_]/', '', pathinfo($file['name'], PATHINFO_FILENAME));
+                $filename = time() . '_' . $safeName . '.' . $extension;
+                debug_log("Using FALLBACK filename: " . $filename);
+            }
+
             $filepath = $uploadDir . $filename;
 
             if (move_uploaded_file($file['tmp_name'], $filepath)) {
+                debug_log("File moved to temp location: " . $filepath);
+
                 // Загружаем на Яндекс.Диск если указан ТЦ
                 if ($shoppingCenterId) {
                     try {
@@ -647,29 +798,40 @@ class AdminTrislavGroupController extends AdminBaseController {
 
                         // Проверим подключение
                         $isConnected = $diskService->checkConnection();
+                        debug_log("Yandex Disk connection: " . ($isConnected ? 'OK' : 'FAILED'));
 
                         if ($isConnected) {
-                            $remoteFilename = $safeName . '.mp4';
+                            // ВАЖНО: передаем ПЕРЕИМЕНОВАННЫЙ файл на Яндекс.Диск
+                            $remoteFilename = $filename; // Используем то же имя, что и локально
                             $yandexDiskPath = "slides/{$shoppingCenterId}/{$remoteFilename}";
 
+                            debug_log("Uploading to Yandex Disk - path: " . $yandexDiskPath);
+
+                            // Используем существующий метод, но передаем переименованный файл
                             $uploadResult = $diskService->uploadVideoToShoppingCenter($filepath, $shoppingCenterId, $remoteFilename);
 
                             if ($uploadResult) {
+                                debug_log("Yandex Disk upload SUCCESS: " . $yandexDiskPath);
 
                                 // Удаляем временный файл после успешной загрузки
                                 unlink($filepath);
+                                debug_log("Temp file deleted: " . $filepath);
 
                                 return [
                                     'filename' => $remoteFilename,
                                     'disk_path' => $yandexDiskPath
                                 ];
                             } else {
+                                debug_log("Yandex Disk upload FAILED");
                             }
                         } else {
+                            debug_log("Yandex Disk not connected");
                         }
                     } catch (Exception $e) {
+                        debug_log("Yandex Disk exception: " . $e->getMessage());
                     }
                 } else {
+                    debug_log("No shopping center ID provided, skipping Yandex Disk");
                 }
 
                 // Если Яндекс.Диск не доступен, сохраняем локально
@@ -680,17 +842,20 @@ class AdminTrislavGroupController extends AdminBaseController {
 
                 $finalPath = $finalDir . $filename;
                 rename($filepath, $finalPath);
-
+                debug_log("File saved locally: " . $finalPath);
 
                 return [
                     'filename' => $filename,
                     'disk_path' => null
                 ];
             } else {
+                debug_log("Failed to move uploaded file");
             }
         } else {
+            debug_log("File upload error: " . $file['error']);
         }
 
+        debug_log("=== END VIDEO UPLOAD ===");
         return null;
     }
 
@@ -711,24 +876,48 @@ class AdminTrislavGroupController extends AdminBaseController {
     /**
      * Обновляет связь с информацией о видео файле
      */
-    /**
-     * Обновляет связь с информацией о видео файле
-     */
-    private function updateConnectionWithVideo($clientId, $projectId, $videoFilename, $yandexDiskPath) {
+    private function updateConnectionWithVideo($connectionId, $videoFilename, $yandexDiskPath) {
+        debug_log("Updating connection with video - connection ID: $connectionId");
+
         $connectionModel = new TrislavGroupClientProject();
 
-        // Находим ID последней связи для этого клиента и проекта
-        $connection = $connectionModel->findByClientAndProject($clientId, $projectId);
+        if ($connectionId) {
+            debug_log("Updating connection ID: " . $connectionId);
 
-        if ($connection) {
             // Обновляем связь с видео информацией
-            $connectionModel->update($connection['id'], [
+            $result = $connectionModel->update($connectionId, [
                 'video_filename' => $videoFilename,
                 'yandex_disk_path' => $yandexDiskPath
             ]);
+
+            debug_log("Connection update result: " . ($result ? 'SUCCESS' : 'FAILED'));
+
+            return $connectionId;
         } else {
+            debug_log("Connection ID not provided for video update");
         }
+
+        return null;
     }
+
+    /**
+     * Находит ID связи по клиенту и проекту
+     */
+    private function findConnectionId($clientId, $projectId) {
+        debug_log("Searching connection - client: $clientId, project: $projectId");
+
+        $connectionModel = new TrislavGroupClientProject();
+        $connection = $connectionModel->findByClientAndProject($clientId, $projectId);
+
+        if ($connection) {
+            debug_log("Connection FOUND - ID: " . $connection['id']);
+        } else {
+            debug_log("Connection NOT FOUND for client $clientId and project $projectId");
+        }
+
+        return $connection ? $connection['id'] : null;
+    }
+
     public function download_shopping_center_videos() {
 
         $shoppingCenterId = $_GET['shopping_center_id'] ?? null;
@@ -1050,6 +1239,124 @@ class AdminTrislavGroupController extends AdminBaseController {
         }
 
         return null;
+    }
+
+    public function trislav_media_dashboard() {
+        $portfolioModel = new Portfolio();
+        $shoppingCenterModel = new ShoppingCenter();
+        $leadModel = new Lead();
+        $advantageModel = new LedAdvantage();
+
+        $data = [
+            'portfolio' => $portfolioModel->getAll(),
+            'shoppingCenters' => $shoppingCenterModel->getAll(),
+            'leads' => $leadModel->getAll(),
+            'ledAdvantages' => $advantageModel->getByCategory('led'),
+            'title' => 'Дашборд Трислав Медиа',
+            'current_action' => 'trislav_media_dashboard'
+        ];
+
+        $this->view('admin/trislav_media_dashboard', $data);
+    }
+
+    /**
+     * Удаляет видеофайл (с Яндекс.Диска и локально)
+     */
+    private function deleteVideoFile($videoFilename, $yandexDiskPath) {
+        debug_log("=== START VIDEO FILE DELETION ===");
+        debug_log("Video filename: " . ($videoFilename ?? 'NULL'));
+        debug_log("Yandex disk path: " . ($yandexDiskPath ?? 'NULL'));
+
+        $deletedCount = 0;
+
+        // Удаляем с Яндекс.Диска если есть
+        if (!empty($yandexDiskPath)) {
+            try {
+                $yandexConfig = require ROOT_PATH . '/config/yandex_disk.php';
+                $diskService = new YandexDiskService($yandexConfig['token']);
+
+                debug_log("Attempting to delete from Yandex Disk: " . $yandexDiskPath);
+                $deleteResult = $diskService->deleteFile($yandexDiskPath);
+
+                if ($deleteResult) {
+                    debug_log("✓ Yandex Disk file deleted: " . $yandexDiskPath);
+                    $deletedCount++;
+                } else {
+                    debug_log("✗ Yandex Disk file deletion failed: " . $yandexDiskPath);
+                }
+            } catch (Exception $e) {
+                debug_log("✗ Yandex Disk deletion error: " . $e->getMessage());
+            }
+        } else {
+            debug_log("No Yandex Disk path provided for deletion");
+        }
+
+        // Удаляем локальный файл если есть
+        if (!empty($videoFilename)) {
+            $localPath = ROOT_PATH . '/uploads/videos/' . $videoFilename;
+            if (file_exists($localPath)) {
+                if (unlink($localPath)) {
+                    debug_log("✓ Local video file deleted: " . $localPath);
+                    $deletedCount++;
+                } else {
+                    debug_log("✗ Local video file deletion failed: " . $localPath);
+                }
+            } else {
+                debug_log("Local video file not found: " . $localPath);
+            }
+
+            // Также удаляем временный файл если есть
+            $tempPath = ROOT_PATH . '/uploads/videos/temp/' . $videoFilename;
+            if (file_exists($tempPath)) {
+                if (unlink($tempPath)) {
+                    debug_log("✓ Temp video file deleted: " . $tempPath);
+                    $deletedCount++;
+                } else {
+                    debug_log("✗ Temp video file deletion failed: " . $tempPath);
+                }
+            }
+        } else {
+            debug_log("No local video filename provided for deletion");
+        }
+
+        debug_log("Total files deleted: " . $deletedCount);
+        debug_log("=== END VIDEO FILE DELETION ===");
+
+        return $deletedCount > 0;
+    }
+
+    /**
+     * Проверяет нужно ли показывать поля для видео
+     */
+    private function shouldShowVideoFields($connection) {
+        // Если есть существующее видео - показываем поля
+        if (($connection['video'] ?? '') || ($connection['video_filename'] ?? '')) {
+            return true;
+        }
+
+        // Для новых связок проверяем условия
+        $projectModel = new TrislavGroupProject();
+        $serviceModel = new Service();
+
+        $project = null;
+        $service = null;
+
+        // Получаем данные проекта если есть ID
+        if (!empty($connection['id_project'])) {
+            $project = $projectModel->find($connection['id_project']);
+        }
+
+        // Получаем данные услуги если есть ID
+        if (!empty($connection['id_service'])) {
+            $service = $serviceModel->find($connection['id_service']);
+        }
+
+        $isTrislavMedia = $project && strpos($project['title'], 'Медиа') !== false;
+        $isLedService = $service && strpos($service['title'], 'LED') !== false;
+        $hasShoppingCenter = !empty($connection['id_shopping_center']);
+        $hasTariff = !empty($connection['id_tariff']);
+
+        return $isTrislavMedia && $isLedService && $hasShoppingCenter && $hasTariff;
     }
 }
 ?>

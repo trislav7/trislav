@@ -5,41 +5,29 @@ class LedController extends Controller {
         $tariffModel = new Tariff();
         $portfolioModel = new Portfolio();
         $ledAdvantageModel = new LedAdvantage();
+        $ledRequirementModel = new LedRequirement();
         $settingModel = new SiteSetting();
 
         $services = $serviceModel->getActiveByCategory('led');
         $tariffs = $tariffModel->getActive();
         $portfolio = $portfolioModel->getByCategory('led');
-        $advantages = $ledAdvantageModel->getAllActive();
+        $advantages = $ledAdvantageModel->getActiveByCategory('led');
         $settings = $settingModel->getAllSettings();
 
-        // Получаем требования из настроек
+        // Получаем требования из новой таблицы
+        $mainRequirements = $ledRequirementModel->getByType('main');
+        $additionalRequirements = $ledRequirementModel->getByType('additional');
+
         $requirements = [
-            'title' => $settings['led_requirements_title'] ?? 'Требования к видеороликам',
-            'subtitle' => $settings['led_requirements_subtitle'] ?? 'Технические спецификации для качественного отображения на LED-экранах',
-            'main_title' => $settings['led_requirements_main_title'] ?? 'Основные требования',
-            'additional_title' => $settings['led_requirements_additional_title'] ?? 'Дополнительные рекомендации',
-            'info_title' => $settings['led_requirements_info_title'] ?? 'Важная информация',
-            'info_content' => $settings['led_requirements_info_content'] ?? '',
-            'main_requirements' => [],
-            'additional_requirements' => []
+            'title' => 'Требования к видеороликам',
+            'subtitle' => 'Технические спецификации для качественного отображения на LED-экранах',
+            'main_title' => 'Основные требования',
+            'additional_title' => 'Дополнительные рекомендации',
+            'main_requirements' => array_column($mainRequirements, 'description'),
+            'additional_requirements' => array_column($additionalRequirements, 'description'),
+            'info_title' => 'Важная информация',
+            'info_content' => 'Для получения индивидуальной консультации по техническим требованиям свяжитесь с нашим специалистом.'
         ];
-
-        // Собираем основные требования
-        for ($i = 1; $i <= 5; $i++) {
-            $key = 'led_requirement_main_' . $i;
-            if (!empty($settings[$key])) {
-                $requirements['main_requirements'][] = $settings[$key];
-            }
-        }
-
-        // Собираем дополнительные рекомендации
-        for ($i = 1; $i <= 5; $i++) {
-            $key = 'led_requirement_additional_' . $i;
-            if (!empty($settings[$key])) {
-                $requirements['additional_requirements'][] = $settings[$key];
-            }
-        }
 
         $this->view('site/led', [
             'services' => $services,
@@ -47,6 +35,7 @@ class LedController extends Controller {
             'portfolio' => $portfolio,
             'advantages' => $advantages,
             'requirements' => $requirements,
+            'settings' => $settings,
             'title' => 'LED Экраны в Торговых Центрах | Трислав Медиа'
         ]);
     }
@@ -62,7 +51,8 @@ class LedController extends Controller {
                 'service_type' => 'led',
                 'budget' => $_POST['budget'] ?? '',
                 'message' => $_POST['message'] ?? '',
-                'created_at' => date('Y-m-d H:i:s')
+                'created_at' => date('Y-m-d H:i:s'),
+                'tariff_id' => $_POST['tariff_id'] ?? null,
             ]);
 
             header('Location: /led?success=1');

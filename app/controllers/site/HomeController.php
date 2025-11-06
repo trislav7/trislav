@@ -5,7 +5,7 @@ class HomeController extends Controller {
         $projectModel = new Project();
         $clientModel = new TrislavGroupClient();
         $reviewModel = new TrislavGroupReview();
-        $advantageModel = new TrislavGroupAdvantage();
+        $ledAdvantageModel = new LedAdvantage();
         $settingModel = new SiteSetting();
 
         $data = [
@@ -13,7 +13,7 @@ class HomeController extends Controller {
             'projects' => $projectModel->getAllActive(),
             'clients' => $clientModel->getAllActive(),
             'reviews' => $reviewModel->getAllActive(),
-            'advantages' => $advantageModel->getAllActive(),
+            'advantages' => $ledAdvantageModel->getActiveByCategory('trislav_media'),
             'settings' => $settingModel->getAllSettings(),
             'title' => 'Трислав Медиа - Мы создаем точечную рекламу, которая доходит до потребителя.'
         ];

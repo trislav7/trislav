@@ -40,8 +40,15 @@
                         <p class="text-light text-lg"><?= htmlspecialchars($lead['service_type']) ?></p>
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-gray-400">Бюджет:</label>
-                        <p class="text-light"><?= htmlspecialchars($lead['budget'] ?? 'Не указан') ?></p>
+                        <label class="text-sm font-medium text-gray-400">Выбранный тариф:</label>
+                        <?php if (!empty($lead['tariff_id']) && !empty($tariff)): ?>
+                            <p class="text-light">
+                                <?= htmlspecialchars($tariff['title']) ?> - <?= htmlspecialchars($tariff['price']) ?> ₽
+                            </p>
+                            <p class="text-gray-400 text-sm">ID тарифа: <?= $lead['tariff_id'] ?></p>
+                        <?php else: ?>
+                            <p class="text-gray-400">Не выбран</p>
+                        <?php endif; ?>
                     </div>
                     <div>
                         <label class="text-sm font-medium text-gray-400">Статус:</label>
@@ -85,4 +92,3 @@
 <?php
 $content = ob_get_clean();
 include __DIR__ . '/../layouts/admin.php';
-?>

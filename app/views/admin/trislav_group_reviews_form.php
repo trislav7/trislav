@@ -17,7 +17,7 @@ $isEdit = isset($item) && $item;
                 <div>
                     <label for="author_name" class="block mb-2 font-medium text-light">Имя автора *</label>
                     <input type="text" id="author_name" name="author_name" required
-                           value="<?= htmlspecialchars($item['title'] ?? '') ?>"
+                           value="<?= htmlspecialchars($item['author_name'] ?? '') ?>"
                            class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight">
                 </div>
 
@@ -33,14 +33,14 @@ $isEdit = isset($item) && $item;
                 <label for="content" class="block mb-2 font-medium text-light">Текст отзыва *</label>
                 <textarea id="content" name="content" rows="4" required
                           class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight"
-                          placeholder="Текст отзыва..."><?= htmlspecialchars($item['description'] ?? '') ?></textarea>
+                          placeholder="Текст отзыва..."><?= htmlspecialchars($item['content'] ?? '') ?></textarea>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="author_avatar" class="block mb-2 font-medium text-light">URL аватара</label>
                     <input type="url" id="author_avatar" name="author_avatar"
-                           value="<?= htmlspecialchars($item['image_url'] ?? '') ?>"
+                           value="<?= htmlspecialchars($item['author_avatar'] ?? '') ?>"
                            class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight"
                            placeholder="https://example.com/avatar.jpg">
                 </div>

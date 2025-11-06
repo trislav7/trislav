@@ -54,6 +54,12 @@ if (strpos($action, 'services_') === 0) {
 } elseif (strpos($action, 'categories_') === 0) {
     $controller = new AdminCategoriesController();
     $method = str_replace('categories_', '', $action);
+} elseif (strpos($action, 'trislav_media_dashboard') === 0) {
+    $controller = new AdminTrislavGroupController();
+    $method = $action;
+} elseif ($action === 'trislav_clients_delete') {
+    $controller = new AdminTrislavGroupController();
+    $method = 'clients_delete';
 } elseif (strpos($action, 'trislav_') === 0) {
     // ДОБАВЛЯЕМ ОБРАБОТКУ ДЛЯ ТРИСЛАВ ГРУПП
     $controller = new AdminTrislavGroupController();
