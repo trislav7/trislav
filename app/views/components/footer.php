@@ -1,27 +1,15 @@
 <footer class="bg-[#0d0d1a] py-12 lg:py-16 px-4">
     <div class="container mx-auto max-w-6xl">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-8">
             <div class="footer-column">
                 <h3 class="w-40 mb-6"><img src="/images/tm_.png" /></h3>
                 <p class="text-gray-400 mb-6 leading-relaxed">
                     Мы создаем точечную рекламу, которая доходит до потребителя.
                 </p>
-                <div class="social-links flex space-x-4">
-                    <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-light transition-all duration-300 hover:bg-highlight hover:-translate-y-1">
-                        <i class="fab fa-facebook-f"></i>
-                    </a>
-                    <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-light transition-all duration-300 hover:bg-highlight hover:-translate-y-1">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                    <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-light transition-all duration-300 hover:bg-highlight hover:-translate-y-1">
-                        <i class="fab fa-telegram"></i>
-                    </a>
-                    <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-light transition-all duration-300 hover:bg-highlight hover:-translate-y-1">
-                        <i class="fab fa-vk"></i>
-                    </a>
-                </div>
             </div>
+            <div class="footer-column">
 
+            </div>
             <div class="footer-column">
                 <h3 class="text-xl font-bold text-highlight mb-6">Направления</h3>
                 <ul class="space-y-3">
@@ -33,13 +21,43 @@
 
             <div class="footer-column">
                 <h3 class="text-xl font-bold text-highlight mb-6">Контакты</h3>
-                <ul class="space-y-3">
-                    <li class="text-gray-400">г. Москва, ул. Тверская, д. 10</li>
-                    <li class="text-gray-400">+7 (495) 123-45-67</li>
-                    <li class="text-gray-400">info@trimedia.ru</li>
-                </ul>
+                <div class="space-y-3">
+                    <?php if (!empty($settings['phone'])): ?>
+                        <p class="flex items-center text-gray-400">
+                            <i class="fas fa-phone text-highlight mr-3"></i>
+                            <?= htmlspecialchars($settings['phone']) ?>
+                        </p>
+                    <?php endif; ?>
+                    <?php if (!empty($settings['address'])): ?>
+                        <p class="flex items-center text-gray-400">
+                            <i class="fas fa-map-marker-alt text-highlight mr-3"></i>
+                            <?= htmlspecialchars($settings['address']) ?>
+                        </p>
+                    <?php endif; ?>
+                    <?php if (!empty($settings['email'])): ?>
+                        <p class="flex items-center text-gray-400">
+                            <i class="fas fa-envelope text-highlight mr-3"></i>
+                            <?= htmlspecialchars($settings['email']) ?>
+                        </p>
+                    <?php endif; ?>
+                    <?php if (!empty($settings['telegram'])): ?>
+                        <p class="flex items-center text-gray-400">
+                            <i class="fab fa-telegram text-highlight mr-3"></i>
+                            <a href="https://t.me/<?= htmlspecialchars(ltrim($settings['telegram'], '@')) ?>" target="_blank" class="text-gray-400 no-underline hover:text-highlight">
+                                <?= htmlspecialchars($settings['telegram']) ?>
+                            </a>
+                        </p>
+                    <?php endif; ?>
+                    <?php if (!empty($settings['vk_url'])): ?>
+                        <p class="flex items-center text-gray-400">
+                            <i class="fab fa-vk text-highlight mr-3"></i>
+                            <a href="<?= htmlspecialchars($settings['vk_url']) ?>" target="_blank" class="text-gray-400 no-underline hover:text-highlight">
+                                Мы ВКонтакте
+                            </a>
+                        </p>
+                    <?php endif; ?>
+                </div>
             </div>
-
         </div>
 
         <div class="copyright text-center pt-8 border-t border-gray-800">

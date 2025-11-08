@@ -13,21 +13,17 @@
             <?php if (isset($projects) && !empty($projects)): ?>
                 <?php foreach ($projects as $project): ?>
                     <?php if ($project['is_active'] && $project['project_url']): ?>
-                        <a href="<?= htmlspecialchars($project['project_url']) ?>" target="_blank"
+                        <a href="<?= htmlspecialchars($project['project_url']) ?>"
                            class="nav-link text-light font-medium no-underline relative transition-colors duration-300 hover:text-highlight">
                             <?= htmlspecialchars($project['title']) ?>
                         </a>
                     <?php endif; ?>
                 <?php endforeach; ?>
             <?php endif; ?>
-            <a href="#clients" class="nav-link text-light font-medium no-underline relative transition-colors duration-300 hover:text-highlight">
-                Клиенты
-            </a>
-            <a href="#reviews" class="nav-link text-light font-medium no-underline relative transition-colors duration-300 hover:text-highlight">
-                Отзывы
-            </a>
-            <a href="/privacy-policy" class="nav-link text-light font-medium no-underline relative transition-colors duration-300 hover:text-highlight">
-                Политика конфиденциальности
+            <!-- Новый пункт "Контакты" -->
+            <a href="#footerContacts"
+               class="nav-link text-light font-medium no-underline relative transition-colors duration-300 hover:text-highlight">
+                Контакты
             </a>
         </nav>
 
@@ -42,21 +38,17 @@
             <?php if (isset($projects) && !empty($projects)): ?>
                 <?php foreach ($projects as $project): ?>
                     <?php if ($project['is_active'] && $project['project_url']): ?>
-                        <a href="<?= htmlspecialchars($project['project_url']) ?>" target="_blank"
+                        <a href="<?= htmlspecialchars($project['project_url']) ?>"
                            class="text-light font-medium no-underline py-2 transition-colors duration-300 hover:text-highlight border-b border-gray-700">
                             <?= htmlspecialchars($project['title']) ?>
                         </a>
                     <?php endif; ?>
                 <?php endforeach; ?>
             <?php endif; ?>
-            <a href="#clients" class="text-light font-medium no-underline py-2 transition-colors duration-300 hover:text-highlight border-b border-gray-700">
-                Клиенты
-            </a>
-            <a href="#reviews" class="text-light font-medium no-underline py-2 transition-colors duration-300 hover:text-highlight border-b border-gray-700">
-                Отзывы
-            </a>
-            <a href="/privacy-policy" class="text-light font-medium no-underline py-2 transition-colors duration-300 hover:text-highlight border-b border-gray-700">
-                Политика конфиденциальности
+            <!-- Новый пункт "Контакты" в мобильном меню -->
+            <a href="#footerContacts"
+               class="text-light font-medium no-underline py-2 transition-colors duration-300 hover:text-highlight border-b border-gray-700">
+                Контакты
             </a>
         </div>
     </div>
@@ -88,6 +80,28 @@
             mobileMenu.classList.add('opacity-0', 'invisible', '-translate-y-2');
             menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
             menuOpen = false;
+        });
+    });
+
+    // Плавный скролл для ссылок с якорями
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                // Учитываем высоту фиксированной шапки
+                const headerHeight = document.querySelector('header')?.offsetHeight || 80;
+                const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
         });
     });
 </script>

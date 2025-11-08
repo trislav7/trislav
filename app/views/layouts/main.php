@@ -290,5 +290,6 @@
         initSlider('reviewsSlider', 'reviewsPrev', 'reviewsNext', 'reviewsIndicators');
     });
 </script>
+<?php include __DIR__ . '/../components/cookie_notice.php'; ?>
 </body>
 </html>

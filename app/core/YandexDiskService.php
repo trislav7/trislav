@@ -231,7 +231,6 @@ class YandexDiskService {
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        debug_log("Yandex Disk rename - from: $oldPath, to: $newPath, code: $httpCode");
 
         return $httpCode === 201 || $httpCode === 200;
     }
@@ -242,7 +241,6 @@ class YandexDiskService {
     public function deleteFile($remotePath) {
         $url = $this->baseUrl . '?path=' . urlencode($remotePath) . '&permanently=true';
 
-        debug_log("Yandex Disk DELETE request: " . $url);
 
         $ch = curl_init();
         curl_setopt_array($ch, [
@@ -259,7 +257,6 @@ class YandexDiskService {
         $error = curl_error($ch);
         curl_close($ch);
 
-        debug_log("Yandex Disk delete response - path: $remotePath, code: $httpCode, error: " . ($error ?: 'none'));
 
         return $httpCode === 204 || $httpCode === 202; // 204 - удалено, 202 - принято в обработку
     }

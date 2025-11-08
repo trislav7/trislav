@@ -16,7 +16,7 @@
                     <textarea name="description" rows="4" class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight placeholder-gray-500"><?= $portfolio['description'] ?? '' ?></textarea>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-light font-semibold mb-3">Категория *</label>
                         <select name="category" required class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight">
@@ -33,24 +33,47 @@
                         <input type="text" name="client_name" value="<?= $portfolio['client_name'] ?? '' ?>"
                                class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight placeholder-gray-500">
                     </div>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-light font-semibold mb-3">Дата проекта</label>
                         <input type="date" name="project_date" value="<?= $portfolio['project_date'] ?? date('Y-m-d') ?>"
                                class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight">
                     </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
+
 
                     <div>
-                        <label class="block text-light font-semibold mb-3">Изображение</label>
-                        <input type="file" name="image" accept="image/*"
-                               class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-highlight file:text-primary hover:file:bg-transparent hover:file:text-highlight hover:file:border hover:file:border-highlight">
-                        <?php if (isset($portfolio['image']) && $portfolio['image']): ?>
-                            <p class="text-gray-400 text-sm mt-2">
-                                <i class="fas fa-image mr-1"></i>Текущее изображение: <?= $portfolio['image'] ?>
-                            </p>
-                        <?php endif; ?>
+                        <?php
+                        $currentImage = $portfolio['image'] ?? '';
+
+                        // Переменные для компонента
+                        $fieldName = 'image';
+                        $currentFile = $currentImage ? $currentImage : '';
+                        $label = 'Изображение работы';
+                        $accept = 'image/*';
+                        $previewId = 'portfolioImagePreview';
+
+                        // Подключаем компонент
+                        $componentPath = __DIR__ . '/components/file_upload.php';
+                        if (file_exists($componentPath)) {
+                            include $componentPath;
+                        } else {
+                            // Fallback на старую версию если компонент не найден
+                            debug_log("Компонент file_upload.php не найден по пути: " . $componentPath);
+                            ?>
+                            <label class="block text-light font-semibold mb-3">Изображение</label>
+                            <input type="file" name="image" accept="image/*"
+                                   class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-highlight file:text-primary hover:file:bg-transparent hover:file:text-highlight hover:file:border hover:file:border-highlight">
+                            <?php if (isset($portfolio['image']) && $portfolio['image']): ?>
+                                <p class="text-gray-400 text-sm mt-2">
+                                    <i class="fas fa-image mr-1"></i>Текущее изображение: /<?= $portfolio['image'] ?>
+                                </p>
+                            <?php endif; ?>
+                            <?php
+                        }
+                        ?>
                     </div>
                 </div>
 

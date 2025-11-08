@@ -12,63 +12,83 @@ class AdminTariffsController extends AdminBaseController {
     }
 
     public function create() {
-        $serviceModel = new Service();
-        $services = $serviceModel->getAllActive();
-
         if ($_POST) {
             $tariffModel = new Tariff();
-            $tariffModel->create([
-                'title' => $_POST['title'],
-                'price' => $_POST['price'],
-                'period' => $_POST['period'],
-                'features' => json_encode(explode("\n", $_POST['features'])),
-                'is_popular' => isset($_POST['is_popular']) ? 1 : 0,
-                'is_active' => isset($_POST['is_active']) ? 1 : 0,
-                'service_id' => $_POST['service_id']
-            ]);
 
-            header('Location: /admin.php?action=tariffs_list&success=1');
-            exit;
+            $data = [
+                'title' => $_POST['title'] ?? '',
+                'price' => $_POST['price'] ?? 0,
+                'old_price' => !empty($_POST['old_price']) ? $_POST['old_price'] : null,
+                'period' => $_POST['period'] ?? 'неделя',
+                'service_id' => !empty($_POST['service_id']) ? $_POST['service_id'] : null,
+                'is_popular' => isset($_POST['is_popular']) ? 1 : 0,
+                'is_active' => isset($_POST['is_active']) ? 1 : 0
+            ];
+
+            // Обрабатываем особенности
+            if (!empty($_POST['features'])) {
+                $features = array_filter(array_map('trim', explode("\n", $_POST['features'])));
+                $data['features'] = json_encode($features, JSON_UNESCAPED_UNICODE);
+            }
+
+            $tariffModel->create($data);
+            $this->setFlashMessage('success', 'Тариф успешно создан');
+            $this->redirect('/admin.php?action=tariffs_list');
         }
 
+        $serviceModel = new Service();
+        $services = $serviceModel->getAll();
+
         $this->view('admin/tariffs_form', [
-            'services' => $services,
-            'title' => 'Добавить тариф'
+            'title' => 'Добавить тариф',
+            'tariff' => null,
+            'services' => $services
         ]);
     }
 
     public function edit() {
         $id = $_GET['id'] ?? null;
         if (!$id) {
-            header('Location: /admin.php?action=tariffs_list');
-            exit;
+            $this->redirect('/admin.php?action=tariffs_list');
         }
 
         $tariffModel = new Tariff();
-        $serviceModel = new Service();
-        
         $tariff = $tariffModel->find($id);
-        $services = $serviceModel->getAllActive();
 
-        if ($_POST) {
-            $tariffModel->update($id, [
-                'title' => $_POST['title'],
-                'price' => $_POST['price'],
-                'period' => $_POST['period'],
-                'features' => json_encode(explode("\n", $_POST['features'])),
-                'is_popular' => isset($_POST['is_popular']) ? 1 : 0,
-                'is_active' => isset($_POST['is_active']) ? 1 : 0,
-                'service_id' => $_POST['service_id']
-            ]);
-
-            header('Location: /admin.php?action=tariffs_list&success=1');
-            exit;
+        if (!$tariff) {
+            $this->setFlashMessage('error', 'Тариф не найден');
+            $this->redirect('/admin.php?action=tariffs_list');
         }
 
+        if ($_POST) {
+            $data = [
+                'title' => $_POST['title'] ?? '',
+                'price' => $_POST['price'] ?? 0,
+                'old_price' => !empty($_POST['old_price']) ? $_POST['old_price'] : null,
+                'period' => $_POST['period'] ?? 'неделя',
+                'service_id' => !empty($_POST['service_id']) ? $_POST['service_id'] : null,
+                'is_popular' => isset($_POST['is_popular']) ? 1 : 0,
+                'is_active' => isset($_POST['is_active']) ? 1 : 0
+            ];
+
+            // Обрабатываем особенности
+            if (!empty($_POST['features'])) {
+                $features = array_filter(array_map('trim', explode("\n", $_POST['features'])));
+                $data['features'] = json_encode($features, JSON_UNESCAPED_UNICODE);
+            }
+
+            $tariffModel->update($id, $data);
+            $this->setFlashMessage('success', 'Тариф успешно обновлен');
+            $this->redirect('/admin.php?action=tariffs_list');
+        }
+
+        $serviceModel = new Service();
+        $services = $serviceModel->getAll();
+
         $this->view('admin/tariffs_form', [
+            'title' => 'Редактировать тариф',
             'tariff' => $tariff,
-            'services' => $services,
-            'title' => 'Редактировать тариф'
+            'services' => $services
         ]);
     }
 }

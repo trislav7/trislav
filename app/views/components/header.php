@@ -10,7 +10,7 @@
         </a>
 
         <nav class="hidden lg:flex space-x-8">
-            <a href="https://xn--80aeqmxhe.xn--p1ai/" target="_blank" class="nav-link text-light font-medium no-underline relative transition-colors duration-300 hover:text-highlight">
+            <a href="https://xn--80aeqmxhe.xn--p1ai/" class="nav-link text-light font-medium no-underline relative transition-colors duration-300 hover:text-highlight">
                 Trislav Group
             </a>
             <!-- Основные направления Трислав Медиа -->
@@ -33,7 +33,7 @@
     <!-- Мобильное меню -->
     <div id="mobileMenu" class="lg:hidden absolute top-full left-0 w-full bg-primary shadow-lg transform -translate-y-2 opacity-0 invisible transition-all duration-300">
         <div class="flex flex-col space-y-4 p-6">
-            <a href="https://xn--80aeqmxhe.xn--p1ai/" target="_blank" class="text-light font-medium no-underline py-2 transition-colors duration-300 hover:text-highlight border-b border-gray-700">
+            <a href="https://xn--80aeqmxhe.xn--p1ai/" class="text-light font-medium no-underline py-2 transition-colors duration-300 hover:text-highlight border-b border-gray-700">
                 Trislav Group
             </a>
             <!-- Основные направления Трислав Медиа -->

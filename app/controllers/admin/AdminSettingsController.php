@@ -31,23 +31,6 @@ class AdminSettingsController extends AdminBaseController {
                 }
             }
 
-            // Добавляем новые преимущества
-            if (isset($_POST['new_advantages']) && is_array($_POST['new_advantages'])) {
-                $advantageModel = new TrislavGroupAdvantage();
-                foreach ($_POST['new_advantages'] as $newAdvantage) {
-                    if (!empty($newAdvantage['title'])) {
-                        $data = [
-                            'title' => $newAdvantage['title'],
-                            'description' => $newAdvantage['description'] ?? '',
-                            'icon_class' => $newAdvantage['icon_class'] ?? '',
-                            'order_index' => $newAdvantage['order_index'] ?? 0,
-                            'is_active' => isset($newAdvantage['is_active']) ? 1 : 0
-                        ];
-                        $advantageModel->create($data);
-                    }
-                }
-            }
-
             $this->setFlashMessage('success', 'Настройки успешно обновлены');
             $this->redirect('/admin.php?action=settings');
         }
@@ -57,7 +40,6 @@ class AdminSettingsController extends AdminBaseController {
 
         $data = [
             'settings' => $settingModel->getAllSettings(),
-            'advantages' => $advantageModel->getAll(),
             'title' => 'Настройки сайта',
             'current_action' => 'settings'
         ];

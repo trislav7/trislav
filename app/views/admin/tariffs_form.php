@@ -1,4 +1,7 @@
-<?php ob_start(); ?>
+<?php
+// app/views/admin/tariffs_form.php
+ob_start();
+?>
 
     <div class="space-y-6">
         <h1 class="text-3xl font-bold text-highlight"><?= $title ?></h1>
@@ -13,33 +16,44 @@
                     </div>
 
                     <div>
-                        <label class="block text-light font-semibold mb-3">Цена *</label>
-                        <input type="number" name="price" value="<?= $tariff['price'] ?? '' ?>" required
-                               class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
                         <label class="block text-light font-semibold mb-3">Период *</label>
                         <input type="text" name="period" value="<?= $tariff['period'] ?? 'неделя' ?>" required
                                class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight"
                                placeholder="неделя, месяц, год">
                     </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-light font-semibold mb-3">Текущая цена *</label>
+                        <input type="number" name="price" value="<?= $tariff['price'] ?? '' ?>" required
+                               class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight"
+                               placeholder="0.00" step="0.01" min="0">
+                    </div>
 
                     <div>
-                        <label class="block text-light font-semibold mb-3">Услуга</label>
-                        <select name="service_id" class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight">
-                            <option value="" class="bg-primary">Выберите услугу</option>
-                            <?php if (!empty($services)): ?>
-                                <?php foreach ($services as $service): ?>
-                                    <option value="<?= $service['id'] ?>" <?= isset($tariff['service_id']) && $tariff['service_id'] == $service['id'] ? 'selected' : '' ?> class="bg-primary">
-                                        <?= htmlspecialchars($service['title']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </select>
+                        <label class="block text-light font-semibold mb-3">Старая цена (для акций)</label>
+                        <input type="number" name="old_price" value="<?= $tariff['old_price'] ?? '' ?>"
+                               class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight"
+                               placeholder="0.00" step="0.01" min="0">
+                        <p class="text-gray-400 text-sm mt-1">
+                            Если указана старая цена, она будет отображаться перечеркнутой рядом с текущей
+                        </p>
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-light font-semibold mb-3">Услуга</label>
+                    <select name="service_id" class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight">
+                        <option value="" class="bg-primary">Выберите услугу</option>
+                        <?php if (!empty($services)): ?>
+                            <?php foreach ($services as $service): ?>
+                                <option value="<?= $service['id'] ?>" <?= isset($tariff['service_id']) && $tariff['service_id'] == $service['id'] ? 'selected' : '' ?> class="bg-primary">
+                                    <?= htmlspecialchars($service['title']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
                 </div>
 
                 <div>

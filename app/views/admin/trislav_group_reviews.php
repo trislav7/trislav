@@ -42,8 +42,8 @@ ob_start();
                             <tr class="border-b border-highlight/20 hover:bg-highlight/5 transition-colors">
                                 <td class="py-3 px-4 text-gray-300"><?= $review['id'] ?></td>
                                 <td class="py-3 px-4">
-                                    <?php if (!empty($review['image_url'])): ?>
-                                        <img src="<?= htmlspecialchars($review['image_url']) ?>"
+                                    <?php if (!empty($review['author_avatar'])): ?>
+                                        <img src="<?= htmlspecialchars($review['author_avatar']) ?>"
                                              alt="<?= htmlspecialchars($review['author_name'] ?? '') ?>"
                                              class="w-16 h-16 object-cover rounded-lg">
                                     <?php else: ?>

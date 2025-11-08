@@ -19,6 +19,10 @@ class TrislavGroupClient extends Model {
 
     public function findWithDetails($id) {
         $client = $this->find($id);
+        if ($client && !empty($client['image_url'])) {
+            // Проверяем существование файла и переименовываем если нужно
+            $this->ensureCorrectClientImageName($client);
+        }
 
         if ($client) {
             // Получаем все связки клиента
@@ -55,11 +59,32 @@ class TrislavGroupClient extends Model {
         return '';
     }
 
-    // Удаление старого изображения
-    public function deleteOldImage($imagePath) {
-        $fullPath = ROOT_PATH . $imagePath;
-        if (file_exists($fullPath) && is_file($fullPath)) {
-            unlink($fullPath);
+    private function deleteOldImage($imagePath) {
+        if (!empty($imagePath)) {
+            $fullPath = ROOT_PATH . $imagePath;
+            if (file_exists($fullPath) && is_file($fullPath)) {
+                if (unlink($fullPath)) {
+                    return true;
+                } else {
+                }
+            } else {
+            }
+        }
+        return false;
+    }
+
+    private function ensureCorrectClientImageName(&$client) {
+        $currentPath = ROOT_PATH . $client['image_url'];
+        $expectedFilename = 'client_' . $client['id'] . '.' . pathinfo($client['image_url'], PATHINFO_EXTENSION);
+        $expectedPath = ROOT_PATH . '/uploads/clients/' . $expectedFilename;
+
+        // Если файл существует но с другим именем - переименовываем
+        if (file_exists($currentPath) && basename($client['image_url']) !== $expectedFilename) {
+            if (rename($currentPath, $expectedPath)) {
+                $client['image_url'] = '/uploads/clients/' . $expectedFilename;
+                // Обновляем в БД
+                $this->update($client['id'], ['image_url' => $client['image_url']]);
+            }
         }
     }
 }

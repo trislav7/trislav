@@ -97,6 +97,16 @@ if (strpos($action, 'services_') === 0) {
     // ДЛЯ AJAX ГЕНЕРАЦИИ ПРОМПТА
     $controller = new AdminAIAssistantController();
     $method = 'generatePrompt';
+} elseif (strpos($action, 'work_process') === 0) {
+    $controller = new AdminWorkProcessController();
+    $method = str_replace('work_process', '', $action);
+    $method = $method ?: 'index';
+
+    // Для edit создаем правильное имя метода
+    if ($method === '_edit') {
+        $method = 'edit';
+    }
+
 } else {
     $controller = new AdminAuthController();
     $method = $action;
@@ -104,13 +114,8 @@ if (strpos($action, 'services_') === 0) {
 
 // Вызываем метод
 if (method_exists($controller, $method)) {
-    // ОТЛАДКА: выведем что вызывается
-    error_log("Calling method: " . get_class($controller) . "->" . $method);
     $controller->$method();
 } else {
-    // ОТЛАДКА: выведем информацию об ошибке
-    error_log("Method not found: " . get_class($controller) . "->" . $method);
-    error_log("Available methods: " . implode(', ', get_class_methods($controller)));
 
     // Показываем красивую 404 для админки
     $errorPage = ROOT_PATH . '/app/views/errors/not_found.php';

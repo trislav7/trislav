@@ -19,10 +19,10 @@ class AdminAIAssistantController extends AdminBaseController {
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['question'])) {
             $question = trim($_POST['question']);
-            $focus = trim($_POST['focus'] ?? '');
+            $specificFiles = trim($_POST['specific_files'] ?? '');
 
             try {
-                $prompt = $this->generateSmartPrompt($question, $focus);
+                $prompt = $this->generateSmartPrompt($question, $specificFiles);
 
                 // Проверяем и чистим промпт перед JSON кодированием
                 $cleanPrompt = mb_convert_encoding($prompt, 'UTF-8', 'UTF-8');
@@ -38,7 +38,6 @@ class AdminAIAssistantController extends AdminBaseController {
 
                 if ($json === false) {
                     $errorMsg = json_last_error_msg();
-
                     // Если не удалось, пробуем очистить промпт более агрессивно
                     $cleanPrompt = $this->deepCleanString($prompt);
                     $response['prompt'] = $cleanPrompt;
@@ -54,7 +53,6 @@ class AdminAIAssistantController extends AdminBaseController {
                 exit;
 
             } catch (Exception $e) {
-
                 $response = [
                     'success' => false,
                     'error' => 'Ошибка: ' . $e->getMessage()
@@ -86,10 +84,42 @@ class AdminAIAssistantController extends AdminBaseController {
         return $string;
     }
 
-    private function generateSmartPrompt($question, $focus = '') {
+    private function generateSmartPrompt($question, $specificFiles = '') {
+        // Если указаны конкретные файлы, показываем только их
+        if (!empty($specificFiles)) {
+            return $this->generateFocusedPrompt($question, $specificFiles);
+        }
+
+        // Иначе показываем полный контекст
+        return $this->generateFullContextPrompt($question);
+    }
+
+    private function generateFocusedPrompt($question, $specificFiles) {
+        $specificFileContents = $this->getSpecificFileContents($specificFiles);
+
+        if (empty($specificFileContents)) {
+            return "❌ **ОШИБКА:** Указанные файлы не найдены.\n\n💬 **ВОПРОС:** {$question}\n\nПожалуйста, проверьте пути к файлам.";
+        }
+
+        $prompt = "🎯 **ФОКУСИРОВАННЫЙ КОНТЕКСТ**\n\n";
+
+        $prompt .= "🔍 **ЗАПРОШЕННЫЕ ФАЙЛЫ:**\n\n";
+
+        foreach ($specificFileContents as $file => $content) {
+            $prompt .= "--- {$file} ---\n";
+            $prompt .= "```php\n{$content}\n```\n\n";
+        }
+
+        $prompt .= "💬 **ВОПРОС:** {$question}\n\n";
+        $prompt .= "**Для дебага используй debug_log**\n\n";
+        $prompt .= "**Отвечай учитывая содержимое указанных файлов.**";
+
+        return $prompt;
+    }
+
+    private function generateFullContextPrompt($question) {
         // Получаем актуальное состояние ключевых файлов
         $fileContents = $this->getCurrentFileContents();
-
         $projectInfo = $this->getProjectInfo();
         $fileStructure = $this->getFileStructure();
 
@@ -115,7 +145,7 @@ class AdminAIAssistantController extends AdminBaseController {
         }
 
         $prompt .= "💬 **ВОПРОС:** {$question}\n\n";
-        $prompt .= "**Для дебага используй debug_log**";
+        $prompt .= "**Для дебага используй debug_log**\n\n";
         $prompt .= "**ПРИМЕЧАНИЕ:** Показаны только основные файлы системы. Если нужны конкретные файлы - уточните какие.\n\n";
         $prompt .= "**Отвечай учитывая архитектуру проекта. Предлагай решения в рамках существующей структуры.**";
 
@@ -332,7 +362,8 @@ class AdminAIAssistantController extends AdminBaseController {
                 $cleanContent = $this->cleanFileContent($content, $file);
 
                 // Умное обрезание в зависимости от типа файла
-                $content = $this->truncateFileSmart($cleanContent, $file);
+//                $content = $this->truncateFileSmart($cleanContent, $file);
+                $content = $cleanContent;
                 $contents[$file] = $content;
             } else {
 
@@ -387,6 +418,29 @@ class AdminAIAssistantController extends AdminBaseController {
                 'TrislavGroupContent', 'TrislavGroupClientProject', 'LedAdvantage', 'LedRequirement'
             ]
         ];
+    }
+
+    private function getSpecificFileContents($filesString) {
+        $files = array_map('trim', explode(',', $filesString));
+        $contents = [];
+
+        foreach ($files as $file) {
+            // Добавляем ROOT_PATH если нужно
+            if (strpos($file, ROOT_PATH) !== 0) {
+                $file = ROOT_PATH . $file;
+            }
+
+            if (file_exists($file)) {
+                $content = file_get_contents($file);
+                $cleanContent = $this->cleanFileContent($content, $file);
+                $relativePath = str_replace(ROOT_PATH, '', $file);
+//                $contents[$relativePath] = $this->truncateFileSmart($cleanContent, $file);
+                $contents[$relativePath] = $cleanContent;
+            } else {
+            }
+        }
+
+        return $contents;
     }
 }
 ?>

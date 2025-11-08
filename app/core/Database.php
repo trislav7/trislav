@@ -58,8 +58,6 @@ class Database {
             $stmt = $this->pdo->prepare($sql);
 
             // 🔥 ДОБАВЛЯЕМ ЛОГИРОВАНИЕ
-            debug_log("Database Query: " . $sql);
-            debug_log("Query Params: " . print_r($params, true));
 
             // 🔥 ПРАВИЛЬНЫЙ БИНДИНГ ПАРАМЕТРОВ
             foreach ($params as $index => $value) {
@@ -67,21 +65,16 @@ class Database {
 
                 if (is_int($value)) {
                     $stmt->bindValue($paramNumber, $value, PDO::PARAM_INT);
-                    debug_log("Binding param $paramNumber as INT: $value");
                 } elseif (is_bool($value)) {
                     $stmt->bindValue($paramNumber, $value, PDO::PARAM_BOOL);
-                    debug_log("Binding param $paramNumber as BOOL: $value");
                 } elseif (is_null($value)) {
                     $stmt->bindValue($paramNumber, $value, PDO::PARAM_NULL);
-                    debug_log("Binding param $paramNumber as NULL");
                 } else {
                     $stmt->bindValue($paramNumber, $value, PDO::PARAM_STR);
-                    debug_log("Binding param $paramNumber as STRING: $value");
                 }
             }
 
             $stmt->execute();
-            debug_log("Query executed successfully");
 
             return $stmt;
 
@@ -93,7 +86,6 @@ class Database {
                 'params' => $params,
                 'trace' => $e->getTraceAsString()
             ];
-            debug_log("DATABASE ERROR: " . print_r($errorInfo, true));
 
             throw new Exception("Database query failed: " . $e->getMessage());
         }
@@ -101,18 +93,14 @@ class Database {
 
 
     public function fetchAll($sql, $params = []) {
-        debug_log("fetchAll called with SQL: " . $sql);
         $stmt = $this->query($sql, $params);
         $result = $stmt->fetchAll();
-        debug_log("fetchAll result count: " . count($result));
         return $result;
     }
 
     public function fetch($sql, $params = []) {
-        debug_log("fetch called with SQL: " . $sql);
         $stmt = $this->query($sql, $params);
         $result = $stmt->fetch();
-        debug_log("fetch result: " . ($result ? 'found' : 'not found'));
         return $result;
     }
     

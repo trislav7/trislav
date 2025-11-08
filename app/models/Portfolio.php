@@ -6,11 +6,9 @@ class Portfolio extends Model {
         $cacheKey = "portfolio_{$category}" . ($limit ? "_$limit" : '');
 
         if ($cached = $this->cache->get($cacheKey)) {
-            debug_log("Cache HIT for key: " . $cacheKey);
             return $cached;
         }
 
-        debug_log("Cache MISS for key: " . $cacheKey);
 
         $sql = "SELECT * FROM portfolio WHERE category = ? AND is_active = 1 ORDER BY project_date DESC";
         $params = [$category];
@@ -18,11 +16,9 @@ class Portfolio extends Model {
         if ($limit) {
             $sql .= " LIMIT ?";
             $params[] = (int)$limit;
-            debug_log("Adding LIMIT to query: " . $limit);
         }
 
         $result = $this->db->fetchAll($sql, $params);
-        debug_log("Portfolio by category result count: " . count($result));
 
         $this->cache->set($cacheKey, $result);
         return $result;
@@ -33,11 +29,9 @@ class Portfolio extends Model {
 
 
         if ($cached = $this->cache->get($cacheKey)) {
-            debug_log("Cache HIT for key: " . $cacheKey);
             return $cached;
         }
 
-        debug_log("Cache MISS for key: " . $cacheKey);
         $intLimit = (int)$limit;
 
         $result = $this->db->fetchAll("
@@ -62,16 +56,12 @@ class Portfolio extends Model {
         $cacheKey = "portfolio_slider_{$category}_{$limit}";
 
         if ($cached = $this->cache->get($cacheKey)) {
-            debug_log("Cache HIT for key: " . $cacheKey);
             return $cached;
         }
 
-        debug_log("Cache MISS for key: " . $cacheKey);
-        debug_log("Getting portfolio for slider. Category: $category, Limit: $limit");
 
         // 🔥 ИСПРАВЛЕНИЕ: Явно преобразуем лимит в целое число
         $intLimit = (int)$limit;
-        debug_log("Converted limit to INT: $intLimit");
 
         $result = $this->db->fetchAll("
         SELECT * FROM portfolio 

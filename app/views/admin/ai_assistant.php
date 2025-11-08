@@ -16,30 +16,34 @@
         <!-- Левая колонка - Ввод -->
         <div class="bg-secondary rounded-xl p-6 border border-highlight/30">
             <h2 class="text-xl font-bold text-highlight mb-4">Задайте вопрос</h2>
-            
+
             <div class="space-y-4">
                 <div>
                     <label class="block text-gray-300 text-sm font-medium mb-2">Ваш вопрос:</label>
-                    <textarea 
-                        id="userQuestion" 
-                        placeholder="Опишите задачу, например: 'Как переделать раздел каталога учитывая текущую структуру?'"
-                        class="w-full h-32 bg-primary border border-highlight/30 rounded-lg p-4 text-light placeholder-gray-500 focus:border-highlight focus:outline-none transition-colors resize-none"
+                    <textarea
+                            id="userQuestion"
+                            placeholder="Опишите задачу, например: 'Как переделать раздел каталога учитывая текущую структуру?'"
+                            class="w-full h-32 bg-primary border border-highlight/30 rounded-lg p-4 text-light placeholder-gray-500 focus:border-highlight focus:outline-none transition-colors resize-none"
                     ></textarea>
                 </div>
-                
+
+                <!-- НОВОЕ ПОЛЕ: Конкретные файлы -->
                 <div>
-                    <label class="block text-gray-300 text-sm font-medium mb-2">Фокус задачи (опционально):</label>
-                    <input 
-                        type="text" 
-                        id="taskFocus"
-                        placeholder="Например: админ-панель, стили, база данных, API..."
-                        class="w-full bg-primary border border-highlight/30 rounded-lg p-3 text-light placeholder-gray-500 focus:border-highlight focus:outline-none transition-colors"
+                    <label class="block text-gray-300 text-sm font-medium mb-2">
+                        Конкретные файлы (опционально):
+                        <span class="text-gray-500 text-xs ml-1">Укажите пути к файлам через запятую</span>
+                    </label>
+                    <input
+                            type="text"
+                            id="specificFiles"
+                            placeholder="Например: /app/models/User.php, /app/controllers/admin/AdminController.php"
+                            class="w-full bg-primary border border-highlight/30 rounded-lg p-3 text-light placeholder-gray-500 focus:border-highlight focus:outline-none transition-colors"
                     >
                 </div>
-                
-                <button 
-                    onclick="generatePrompt()"
-                    class="w-full bg-highlight text-primary py-3 px-6 rounded-lg font-semibold hover:bg-transparent hover:text-highlight border-2 border-highlight transition-all duration-300 flex items-center justify-center"
+
+                <button
+                        onclick="generatePrompt()"
+                        class="w-full bg-highlight text-primary py-3 px-6 rounded-lg font-semibold hover:bg-transparent hover:text-highlight border-2 border-highlight transition-all duration-300 flex items-center justify-center"
                 >
                     <i class="fas fa-magic mr-2"></i> Сгенерировать промпт
                 </button>
@@ -65,7 +69,7 @@
         <div class="bg-secondary rounded-xl p-6 border border-highlight/30">
             <h2 class="text-xl font-bold text-highlight mb-4 flex items-center justify-between">
                 <span>Готовый промпт</span>
-                <button 
+                <button
                     onclick="copyToClipboard()"
                     id="copyBtn"
                     class="bg-highlight text-primary py-2 px-4 rounded-lg text-sm font-semibold hover:bg-transparent hover:text-highlight border-2 border-highlight transition-all duration-300"
@@ -73,14 +77,14 @@
                     <i class="fas fa-copy mr-1"></i> Копировать
                 </button>
             </h2>
-            
-            <textarea 
-                id="generatedPrompt" 
+
+            <textarea
+                id="generatedPrompt"
                 readonly
                 class="w-full h-96 bg-primary border border-highlight/30 rounded-lg p-4 text-light font-mono text-sm resize-none focus:outline-none"
                 placeholder="Здесь появится сгенерированный промпт с контекстом вашего проекта..."
             ></textarea>
-            
+
             <div class="mt-4 p-3 bg-highlight/10 border border-highlight/30 rounded-lg">
                 <p class="text-highlight text-sm flex items-center">
                     <i class="fas fa-lightbulb mr-2"></i>
@@ -133,7 +137,7 @@
 <script>
     function generatePrompt() {
         const question = document.getElementById('userQuestion').value.trim();
-        const focus = document.getElementById('taskFocus').value.trim();
+        const specificFiles = document.getElementById('specificFiles').value.trim();
 
         if (!question) {
             alert('Пожалуйста, введите ваш вопрос');
@@ -152,25 +156,17 @@
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: 'question=' + encodeURIComponent(question) + '&focus=' + encodeURIComponent(focus)
+            body: 'question=' + encodeURIComponent(question) + '&specific_files=' + encodeURIComponent(specificFiles)
         })
-            .then(response => {
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
-
-                // Сначала получаем текст для отладки
-                return response.text().then(text => {
-                    console.log('Raw response:', text);
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        console.error('JSON parse error:', e);
-                        throw new Error('Invalid JSON: ' + text.substring(0, 100));
-                    }
-                });
-            })
+            .then(response => response.text().then(text => {
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                    throw new Error('Invalid JSON: ' + text.substring(0, 100));
+                }
+            }))
             .then(data => {
-                console.log('Parsed data:', data);
                 if (data.success) {
                     document.getElementById('generatedPrompt').value = data.prompt;
                 } else {

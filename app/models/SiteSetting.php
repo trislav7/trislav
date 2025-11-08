@@ -2,7 +2,6 @@
 // app/models/SiteSetting.php
 class SiteSetting extends Model {
     protected $table = 'site_settings';
-
     public function getByKey($key) {
         return $this->db->fetch("SELECT * FROM {$this->table} WHERE setting_key = ?", [$key]);
     }

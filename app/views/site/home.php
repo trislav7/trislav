@@ -39,97 +39,97 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                 <!-- LED экраны -->
-                <div class="service-card bg-white/5 rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl h-full flex flex-col">
+                <a href="/led" class="service-card bg-white/5 rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl h-full flex flex-col no-underline cursor-pointer group">
                     <div class="service-image h-48 md:h-56 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1592861956120-8da6360a4c1b?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=800&amp;q=80" alt="LED экраны" class="w-full h-full object-cover transition-transform duration-500">
+                        <img src="/images/led.jpeg" alt="LED экраны" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                     </div>
                     <div class="service-content p-6 flex-grow">
-                        <h3 class="text-xl md:text-2xl font-bold text-highlight mb-4">LED экраны в ТЦ</h3>
-                        <p class="text-gray-300 mb-4 leading-relaxed">
+                        <h3 class="text-xl md:text-2xl font-bold text-highlight mb-4 group-hover:text-light transition-colors duration-300">LED экраны в ТЦ</h3>
+                        <p class="text-gray-300 mb-4 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
                             Размещение рекламы на современных LED-экранах в крупнейших торговых центрах города с высоким трафиком.
                         </p>
                         <ul class="space-y-2">
-                            <li class="flex items-center text-gray-300">
+                            <li class="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                                 <i class="fas fa-check text-highlight mr-3"></i>
                                 Премиальные локации
                             </li>
-                            <li class="flex items-center text-gray-300">
+                            <li class="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                                 <i class="fas fa-check text-highlight mr-3"></i>
                                 Высокое качество изображения
                             </li>
-                            <li class="flex items-center text-gray-300">
+                            <li class="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                                 <i class="fas fa-check text-highlight mr-3"></i>
                                 Аналитика эффективности
                             </li>
-                            <li class="flex items-center text-gray-300">
+                            <li class="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                                 <i class="fas fa-check text-highlight mr-3"></i>
                                 Гибкие тарифы
                             </li>
                         </ul>
                     </div>
-                </div>
+                </a>
 
                 <!-- BTL мероприятия -->
-                <div class="service-card bg-white/5 rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl h-full flex flex-col">
+                <a href="/btl" class="service-card bg-white/5 rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl h-full flex flex-col no-underline cursor-pointer group">
                     <div class="service-image h-48 md:h-56 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1531058020387-3be344556be6?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=800&amp;q=80" alt="BTL мероприятия" class="w-full h-full object-cover transition-transform duration-500">
+                        <img src="images/btl.jpg" alt="BTL мероприятия" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                     </div>
                     <div class="service-content p-6 flex-grow">
-                        <h3 class="text-xl md:text-2xl font-bold text-highlight mb-4">BTL мероприятия</h3>
-                        <p class="text-gray-300 mb-4 leading-relaxed">
+                        <h3 class="text-xl md:text-2xl font-bold text-highlight mb-4 group-hover:text-light transition-colors duration-300">BTL мероприятия</h3>
+                        <p class="text-gray-300 mb-4 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
                             Организация и проведение промо-акций, дегустаций, концертов и других мероприятий для прямого контакта с потребителем.
                         </p>
                         <ul class="space-y-2">
-                            <li class="flex items-center text-gray-300">
+                            <li class="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                                 <i class="fas fa-check text-highlight mr-3"></i>
                                 Раздача листовок и промо-материалов
                             </li>
-                            <li class="flex items-center text-gray-300">
+                            <li class="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                                 <i class="fas fa-check text-highlight mr-3"></i>
                                 Организация мероприятий
                             </li>
-                            <li class="flex items-center text-gray-300">
+                            <li class="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                                 <i class="fas fa-check text-highlight mr-3"></i>
                                 Дегустации и промо-акции
                             </li>
-                            <li class="flex items-center text-gray-300">
+                            <li class="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                                 <i class="fas fa-check text-highlight mr-3"></i>
                                 Концерты и шоу-программы
                             </li>
                         </ul>
                     </div>
-                </div>
+                </a>
 
                 <!-- Видеоролики и логотипы -->
-                <div class="service-card bg-white/5 rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl h-full flex flex-col">
+                <a href="/video" class="service-card bg-white/5 rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl h-full flex flex-col no-underline cursor-pointer group">
                     <div class="service-image h-48 md:h-56 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=800&amp;q=80" alt="Видеопроизводство" class="w-full h-full object-cover transition-transform duration-500">
+                        <img src="/images/video.jpeg" alt="Видеопроизводство" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                     </div>
                     <div class="service-content p-6 flex-grow">
-                        <h3 class="text-xl md:text-2xl font-bold text-highlight mb-4">Видеоролики и логотипы</h3>
-                        <p class="text-gray-300 mb-4 leading-relaxed">
+                        <h3 class="text-xl md:text-2xl font-bold text-highlight mb-4 group-hover:text-light transition-colors duration-300">Видеоролики и логотипы</h3>
+                        <p class="text-gray-300 mb-4 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
                             Профессиональное создание рекламных роликов, корпоративных видео и разработка уникальных логотипов.
                         </p>
                         <ul class="space-y-2">
-                            <li class="flex items-center text-gray-300">
+                            <li class="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                                 <i class="fas fa-check text-highlight mr-3"></i>
                                 Рекламные видеоролики
                             </li>
-                            <li class="flex items-center text-gray-300">
+                            <li class="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                                 <i class="fas fa-check text-highlight mr-3"></i>
                                 Корпоративные видео
                             </li>
-                            <li class="flex items-center text-gray-300">
+                            <li class="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                                 <i class="fas fa-check text-highlight mr-3"></i>
                                 Разработка логотипов
                             </li>
-                            <li class="flex items-center text-gray-300">
+                            <li class="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                                 <i class="fas fa-check text-highlight mr-3"></i>
                                 Брендинг и айдентика
                             </li>
                         </ul>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
     </section>

@@ -31,8 +31,6 @@ class TrislavGroupController extends Controller {
     }
 
     public function contactSubmit() {
-        debug_log("=== TRISLAV GROUP FORM SUBMISSION STARTED ===");
-        debug_log("POST data: " . json_encode($_POST));
 
         if ($_POST) {
             try {
@@ -40,7 +38,6 @@ class TrislavGroupController extends Controller {
 
                 // Проверяем согласие с политикой
                 if (!isset($_POST['privacy_agreement'])) {
-                    debug_log("Privacy agreement not accepted");
                     header('HTTP/1.1 400 Bad Request');
                     exit;
                 }
@@ -58,24 +55,19 @@ class TrislavGroupController extends Controller {
                     'status' => 'new'
                 ];
 
-                debug_log("Prepared lead data for DB: " . json_encode($data));
 
                 // Создаем лид
                 $leadId = $leadModel->create($data);
-                debug_log("SUCCESS: Lead created with ID: " . $leadId);
 
                 // Возвращаем успешный статус для AJAX
                 header('HTTP/1.1 200 OK');
                 exit;
 
             } catch (Exception $e) {
-                debug_log("ERROR creating lead: " . $e->getMessage());
-                debug_log("Error trace: " . $e->getTraceAsString());
                 header('HTTP/1.1 500 Internal Server Error');
                 exit;
             }
         } else {
-            debug_log("No POST data received");
             header('HTTP/1.1 400 Bad Request');
             exit;
         }

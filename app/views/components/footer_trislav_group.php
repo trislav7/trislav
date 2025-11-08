@@ -1,7 +1,7 @@
 <?php
 // app/views/components/footer_trislav_group.php
 ?>
-<footer class="bg-[#0d0d1a] py-12 lg:py-16 px-4">
+<footer class="bg-[#0d0d1a] py-12 lg:py-16 px-4" id="footerContacts">
     <div class="container mx-auto max-w-6xl">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-8">
             <div class="footer-column">
@@ -9,15 +9,10 @@
                 <p class="text-gray-400 mb-6 leading-relaxed">
                     Комплексные решения для развития бизнеса через инновационные подходы и креативные стратегии.
                 </p>
-                <div class="social-links flex space-x-4">
-                    <?php if (isset($settings['vk_url'])): ?>
-                        <a href="<?= htmlspecialchars($settings['vk_url']) ?>" target="_blank" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-light transition-all duration-300 hover:bg-highlight hover:-translate-y-1">
-                            <i class="fab fa-vk"></i>
-                        </a>
-                    <?php endif; ?>
-                </div>
             </div>
+            <div class="footer-column">
 
+            </div>
             <div class="footer-column">
                 <h3 class="text-xl font-bold text-highlight mb-6">Наши проекты</h3>
                 <ul class="space-y-3">
@@ -36,34 +31,35 @@
             </div>
 
             <div class="footer-column">
-                <h3 class="text-xl font-bold text-highlight mb-6">Услуги</h3>
-                <ul class="space-y-3">
-                    <?php if (isset($services) && !empty($services)): ?>
-                        <?php foreach ($services as $service): ?>
-                            <?php if ($service['is_active']): ?>
-                                <li><a href="/<?= $service['category'] ?>" class="text-gray-400 no-underline transition-colors duration-300 hover:text-highlight"><?= htmlspecialchars($service['title']) ?></a></li>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </ul>
-            </div>
-
-            <div class="footer-column">
                 <h3 class="text-xl font-bold text-highlight mb-6">Контакты</h3>
                 <div class="space-y-3">
-                    <?php if (isset($settings['phone'])): ?>
+                    <?php if (!empty($settings['phone'])): ?>
                         <p class="flex items-center text-gray-400">
                             <i class="fas fa-phone text-highlight mr-3"></i>
                             <?= htmlspecialchars($settings['phone']) ?>
                         </p>
                     <?php endif; ?>
-                    <?php if (isset($settings['address'])): ?>
+                    <?php if (!empty($settings['address'])): ?>
                         <p class="flex items-center text-gray-400">
                             <i class="fas fa-map-marker-alt text-highlight mr-3"></i>
                             <?= htmlspecialchars($settings['address']) ?>
                         </p>
                     <?php endif; ?>
-                    <?php if (isset($settings['vk_url'])): ?>
+                    <?php if (!empty($settings['email'])): ?>
+                        <p class="flex items-center text-gray-400">
+                            <i class="fas fa-envelope text-highlight mr-3"></i>
+                            <?= htmlspecialchars($settings['email']) ?>
+                        </p>
+                    <?php endif; ?>
+                    <?php if (!empty($settings['telegram'])): ?>
+                        <p class="flex items-center text-gray-400">
+                            <i class="fab fa-telegram text-highlight mr-3"></i>
+                            <a href="https://t.me/<?= htmlspecialchars(ltrim($settings['telegram'], '@')) ?>" target="_blank" class="text-gray-400 no-underline hover:text-highlight">
+                                <?= htmlspecialchars($settings['telegram']) ?>
+                            </a>
+                        </p>
+                    <?php endif; ?>
+                    <?php if (!empty($settings['vk_url'])): ?>
                         <p class="flex items-center text-gray-400">
                             <i class="fab fa-vk text-highlight mr-3"></i>
                             <a href="<?= htmlspecialchars($settings['vk_url']) ?>" target="_blank" class="text-gray-400 no-underline hover:text-highlight">

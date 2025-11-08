@@ -28,40 +28,125 @@ ob_start();
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <?php foreach ($projects as $project): ?>
-                    <div class="project-card bg-white/5 rounded-xl overflow-hidden">
-                        <?php if (!empty($project['image_url'])): ?>
-                            <div class="h-40 overflow-hidden">
-                                <img src="<?= htmlspecialchars($project['image_url']) ?>"
-                                     alt="<?= htmlspecialchars($project['title'] ?? '') ?>"
-                                     class="w-full h-full object-cover">
-                            </div>
-                        <?php else: ?>
-                            <div class="h-40 bg-highlight/20 flex items-center justify-center">
-                                <i class="fas fa-briefcase text-4xl text-highlight/50"></i>
-                            </div>
+                <?php
+                $projectUrl = $project['project_url'] ?? null;
+                $hasUrl = !empty($projectUrl);
+                $wrapperTag = $hasUrl ? 'a' : 'div';
+                $wrapperAttributes = $hasUrl ? 'href="' . htmlspecialchars($projectUrl) . '" target="_blank" rel="noopener"' : '';
+                ?>
+
+                <<?= $wrapperTag ?> <?= $wrapperAttributes ?>
+                class="project-card block bg-white/5 rounded-xl overflow-hidden border border-transparent transition-all duration-300 hover:border-highlight hover:shadow-2xl hover:shadow-highlight/20 <?= $hasUrl ? 'cursor-pointer group no-underline' : '' ?>">
+
+                <?php if (!empty($project['image_url'])): ?>
+                    <div class="h-40 overflow-hidden">
+                        <img src="<?= htmlspecialchars($project['image_url']) ?>"
+                             alt="<?= htmlspecialchars($project['title'] ?? '') ?>"
+                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                    </div>
+                <?php else: ?>
+                    <div class="h-40 bg-highlight/20 flex items-center justify-center group-hover:bg-highlight/30 transition-colors duration-300">
+                        <i class="fas fa-briefcase text-4xl text-highlight/50 group-hover:text-highlight/70 transition-colors duration-300"></i>
+                    </div>
+                <?php endif; ?>
+
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold text-highlight mb-3 group-hover:text-light transition-colors duration-300 flex items-center">
+                        <?= htmlspecialchars($project['title'] ?? '') ?>
+                        <?php if ($hasUrl): ?>
+                            <span class="inline-block ml-2 text-sm opacity-0 group-hover:opacity-70 transition-opacity duration-300">↗</span>
                         <?php endif; ?>
-                        <div class="p-6">
-                            <h3 class="text-2xl font-bold text-highlight mb-3"><?= htmlspecialchars($project['title'] ?? '') ?></h3>
-                            <p class="text-gray-300 mb-4"><?= htmlspecialchars($project['description'] ?? '') ?></p>
-                            <?php if (!empty($project['tags'])): ?>
-                                <div class="flex flex-wrap gap-2">
-                                    <?php
-                                    $tags = explode(',', $project['tags']);
-                                    foreach ($tags as $tag):
-                                        if (trim($tag)):
-                                            ?>
-                                            <span class="bg-highlight/20 text-highlight px-3 py-1 rounded-full text-sm"><?= htmlspecialchars(trim($tag)) ?></span>
-                                        <?php
-                                        endif;
-                                    endforeach;
+                    </h3>
+
+                    <p class="text-gray-300 mb-4 group-hover:text-gray-200 transition-colors duration-300">
+                        <?= htmlspecialchars($project['description'] ?? '') ?>
+                    </p>
+
+                    <?php if (!empty($project['tags'])): ?>
+                        <div class="flex flex-wrap gap-2">
+                            <?php
+                            $tags = explode(',', $project['tags']);
+                            foreach ($tags as $tag):
+                                if (trim($tag)):
                                     ?>
+                                    <span class="bg-highlight/20 text-highlight px-3 py-1 rounded-full text-sm group-hover:bg-highlight/30 transition-colors duration-300">
+                                                <?= htmlspecialchars(trim($tag)) ?>
+                                            </span>
+                                <?php
+                                endif;
+                            endforeach;
+                            ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($hasUrl): ?>
+                        <div class="mt-4 inline-flex items-center text-highlight group-hover:text-light transition-colors duration-300 font-medium">
+                            <i class="fas fa-external-link-alt mr-2"></i>Открыть проект
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </<?= $wrapperTag ?>>
+            <?php endforeach; ?>
+        </div>
+        </div>
+    </section>
+<?php endif; ?>
+
+    <!-- Третий блок - Нам доверяют (только отзывы из админки) -->
+<?php if (!empty($reviews)): ?>
+    <section class="py-16 bg-primary px-4">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Нам доверяют</h2>
+                <p class="text-lg text-gray-300 max-w-2xl mx-auto">Что говорят наши клиенты о сотрудничестве</p>
+            </div>
+
+            <!-- Слайдер с отзывами как на странице BTL -->
+            <div class="reviews-slider">
+                <?php foreach ($reviews as $review): ?>
+                    <div class="px-3">
+                        <div class="bg-white/5 rounded-xl p-6 md:p-8 mx-auto max-w-4xl border border-highlight/20">
+                            <div class="flex flex-col md:flex-row items-start md:items-center mb-6">
+                                <?php if (!empty($review['author_avatar'])): ?>
+                                    <div class="w-16 h-16 rounded-full overflow-hidden mr-0 md:mr-6 mb-4 md:mb-0">
+                                        <img src="<?= htmlspecialchars($review['author_avatar']) ?>"
+                                             alt="<?= htmlspecialchars($review['author_name'] ?? '') ?>"
+                                             class="w-full h-full object-cover">
+                                    </div>
+                                <?php else: ?>
+                                    <div class="w-16 h-16 bg-highlight/20 rounded-full flex items-center justify-center mr-0 md:mr-6 mb-4 md:mb-0">
+                                        <span class="text-2xl font-bold text-highlight">
+                                            <?= !empty($review['author_name']) ? mb_substr($review['author_name'], 0, 1) : '?' ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="text-center md:text-left">
+                                    <h4 class="text-xl font-bold text-light"><?= htmlspecialchars($review['author_name'] ?? '') ?></h4>
+                                    <?php if (!empty($review['author_position'])): ?>
+                                        <p class="text-gray-400"><?= htmlspecialchars($review['author_position']) ?></p>
+                                    <?php endif; ?>
+                                    <?php if (!empty($review['company'])): ?>
+                                        <p class="text-highlight font-semibold"><?= htmlspecialchars($review['company']) ?></p>
+                                    <?php endif; ?>
                                 </div>
-                            <?php endif; ?>
-                            <?php if (!empty($project['project_url'])): ?>
-                                <a href="<?= htmlspecialchars($project['project_url']) ?>" target="_blank"
-                                   class="mt-4 inline-block text-highlight hover:text-light transition-colors no-underline">
-                                    <i class="fas fa-external-link-alt mr-1"></i>Подробнее
-                                </a>
+                            </div>
+                            <p class="text-gray-300 text-lg leading-relaxed italic mb-4">
+                                "<?= htmlspecialchars($review['content'] ?? '') ?>"
+                            </p>
+
+                            <?php if (!empty($review['rating'])): ?>
+                                <div class="flex items-center justify-center md:justify-start">
+                                    <div class="flex text-highlight">
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <?php if ($i <= $review['rating']): ?>
+                                                <i class="fas fa-star"></i>
+                                            <?php else: ?>
+                                                <i class="far fa-star"></i>
+                                            <?php endif; ?>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <span class="ml-2 text-gray-400"><?= $review['rating'] ?>.0</span>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -69,109 +154,180 @@ ob_start();
             </div>
         </div>
     </section>
-<?php endif; ?>
 
-    <!-- Третий блок - Нам доверяют (клиенты из админки) -->
-<?php if (!empty($clients)): ?>
-    <section class="py-16 bg-primary px-4">
-        <div class="container mx-auto max-w-6xl">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">Нам доверяют</h2>
-                <p class="text-lg text-gray-300 max-w-2xl mx-auto">Компании, которые уже оценили эффективность наших решений</p>
-            </div>
+    <style>
+        .reviews-slider .slick-list {
+            margin: 0 -12px;
+        }
 
-            <!-- Слайдер с логотипами клиентов -->
-            <div class="slider-container mb-12">
-                <div class="slider-track" id="logosSlider">
-                    <?php
-                    // Разбиваем клиентов на группы по 4 для слайдов
-                    $clientChunks = array_chunk($clients, 4);
-                    foreach ($clientChunks as $chunk):
-                        ?>
-                        <div class="slider-slide">
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 items-center">
-                                <?php foreach ($chunk as $client): ?>
-                                    <div class="bg-white/5 rounded-xl p-6 flex items-center justify-center h-28">
-                                        <?php if (!empty($client['image_url'])): ?>
-                                            <img src="<?= htmlspecialchars($client['image_url']) ?>"
-                                                 alt="<?= htmlspecialchars($client['title'] ?? '') ?>"
-                                                 class="max-w-full max-h-16 object-contain">
-                                        <?php else: ?>
-                                            <span class="text-xl font-bold text-highlight"><?= htmlspecialchars($client['title'] ?? '') ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+        .reviews-slider .slick-slide {
+            padding: 0 12px;
+        }
 
-                <!-- Навигационные кнопки -->
-                <button class="slider-nav slider-prev" id="logosPrev">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button class="slider-nav slider-next" id="logosNext">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
+        /* Стили для стрелок - БЕЗ АНИМАЦИЙ */
+        .reviews-slider .slick-prev,
+        .reviews-slider .slick-next {
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 183, 194, 0.9) !important;
+            border-radius: 50%;
+            z-index: 10;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: none !important; /* Убираем все переходы */
+        }
 
-                <!-- Индикаторы -->
-                <div class="slider-indicators" id="logosIndicators">
-                    <!-- Индикаторы будут добавлены через JS -->
-                </div>
-            </div>
+        /* УБИРАЕМ ВСЕ ЭФФЕКТЫ ПРИ НАВЕДЕНИИ */
+        .reviews-slider .slick-prev:hover,
+        .reviews-slider .slick-next:hover {
+            background: rgba(0, 183, 194, 0.9) !important; /* Оставляем тот же цвет */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important; /* Оставляем ту же тень */
+        }
 
-            <!-- Отзывы из админки -->
-            <?php if (!empty($reviews)): ?>
-                <div class="slider-container">
-                    <div class="slider-track" id="reviewsSlider">
-                        <?php foreach ($reviews as $review): ?>
-                            <div class="slider-slide">
-                                <div class="bg-white/5 rounded-xl p-6">
-                                    <div class="flex items-center mb-4">
-                                        <?php if (!empty($review['author_avatar'])): ?>
-                                            <div class="w-12 h-12 rounded-full overflow-hidden mr-4">
-                                                <img src="<?= htmlspecialchars($review['author_avatar']) ?>"
-                                                     alt="<?= htmlspecialchars($review['author_name'] ?? '') ?>"
-                                                     class="w-full h-full object-cover">
-                                            </div>
-                                        <?php else: ?>
-                                            <div class="w-12 h-12 bg-highlight/20 rounded-full flex items-center justify-center mr-4">
-                                            <span class="text-xl font-bold text-highlight">
-                                                <?= !empty($review['author_name']) ? mb_substr($review['author_name'], 0, 1) : '?' ?>
-                                            </span>
-                                            </div>
-                                        <?php endif; ?>
-                                        <div>
-                                            <h4 class="text-lg font-bold"><?= htmlspecialchars($review['author_name'] ?? '') ?></h4>
-                                            <?php if (!empty($review['author_position'])): ?>
-                                                <p class="text-gray-400"><?= htmlspecialchars($review['author_position']) ?></p>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                    <p class="text-gray-300 italic">
-                                        "<?= htmlspecialchars($review['content'] ?? '') ?>"
-                                    </p>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+        .reviews-slider .slick-prev {
+            left: -60px;
+        }
 
-                    <!-- Навигационные кнопки -->
-                    <button class="slider-nav slider-prev" id="reviewsPrev">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="slider-nav slider-next" id="reviewsNext">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+        .reviews-slider .slick-next {
+            right: -60px;
+        }
 
-                    <!-- Индикаторы -->
-                    <div class="slider-indicators" id="reviewsIndicators">
-                        <!-- Индикаторы будут добавлены через JS -->
-                    </div>
-                </div>
-            <?php endif; ?>
-        </div>
-    </section>
+        .reviews-slider .slick-prev:before,
+        .reviews-slider .slick-next:before {
+            content: '' !important; /* Убираем стандартные стрелки */
+        }
+
+        .reviews-slider .slick-prev:after {
+            content: '‹';
+            font-size: 24px;
+            color: #0a0a1a;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .reviews-slider .slick-next:after {
+            content: '›';
+            font-size: 24px;
+            color: #0a0a1a;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        /* Стили для точек */
+        .reviews-slider .slick-dots {
+            bottom: -50px;
+        }
+
+        .reviews-slider .slick-dots li {
+            margin: 0 4px;
+        }
+
+        .reviews-slider .slick-dots li button:before {
+            font-size: 10px;
+            color: #00b7c2;
+            opacity: 0.3;
+        }
+
+        .reviews-slider .slick-dots li.slick-active button:before {
+            opacity: 1;
+            color: #00b7c2;
+        }
+
+        .reviews-slider .slick-dots li button:hover:before {
+            opacity: 0.7;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 1280px) {
+            .reviews-slider .slick-prev {
+                left: -40px;
+            }
+
+            .reviews-slider .slick-next {
+                right: -40px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .reviews-slider .slick-prev {
+                left: -30px;
+            }
+
+            .reviews-slider .slick-next {
+                right: -30px;
+            }
+
+            .reviews-slider .slick-prev,
+            .reviews-slider .slick-next {
+                width: 40px;
+                height: 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .reviews-slider .slick-prev {
+                left: -20px;
+            }
+
+            .reviews-slider .slick-next {
+                right: -20px;
+            }
+
+            .reviews-slider .slick-prev,
+            .reviews-slider .slick-next {
+                width: 36px;
+                height: 36px;
+            }
+
+            .reviews-slider .slick-prev:after,
+            .reviews-slider .slick-next:after {
+                font-size: 20px;
+            }
+        }
+
+        /* Убираем все лишние анимации */
+        .reviews-slider .slick-slide {
+            transition: none;
+        }
+
+        .reviews-slider .slick-slide:hover {
+            transform: none;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            $('.reviews-slider').slick({
+                dots: true,
+                arrows: true,
+                infinite: true,
+                speed: 700,
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                autoplay: true,
+                autoplaySpeed: 5000,
+                pauseOnHover: false,
+                cssEase: 'linear', // Линейная анимация без easing
+                responsive: [
+                    {
+                        breakpoint: 1280,
+                        settings: {
+                            slidesToShow: 1,
+                            slidesToScroll: 1
+                        }
+                    }
+                ]
+            });
+
+            // Дополнительно: отключаем любые hover эффекты через JS
+            $('.reviews-slider .slick-prev, .reviews-slider .slick-next').on('mouseenter mouseleave', function(e) {
+                e.stopPropagation();
+                return false;
+            });
+        });
+    </script>
 <?php endif; ?>
 
     <!-- Четвертый блок - Призыв к действию -->
@@ -311,140 +467,6 @@ ob_start();
         </div>
     </div>
 
-    <script>
-        // Инициализация слайдеров
-        function initSlider(sliderTrackId, prevBtnId, nextBtnId, indicatorsId) {
-            const sliderTrack = document.getElementById(sliderTrackId);
-            const sliderPrev = document.getElementById(prevBtnId);
-            const sliderNext = document.getElementById(nextBtnId);
-            const sliderIndicators = document.getElementById(indicatorsId);
-
-            const slides = document.querySelectorAll(`#${sliderTrackId} .slider-slide`);
-            if (slides.length === 0) return;
-
-            let currentSlide = 0;
-
-            // Создание индикаторов
-            slides.forEach((_, index) => {
-                const indicator = document.createElement('div');
-                indicator.classList.add('slider-indicator');
-                if (index === 0) indicator.classList.add('active');
-                indicator.addEventListener('click', () => goToSlide(index));
-                sliderIndicators.appendChild(indicator);
-            });
-
-            // Функция перехода к слайду
-            function goToSlide(slideIndex) {
-                currentSlide = slideIndex;
-                sliderTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
-
-                // Обновление активного индикатора
-                document.querySelectorAll(`#${indicatorsId} .slider-indicator`).forEach((indicator, index) => {
-                    if (index === currentSlide) {
-                        indicator.classList.add('active');
-                    } else {
-                        indicator.classList.remove('active');
-                    }
-                });
-            }
-
-            // Следующий слайд
-            sliderNext.addEventListener('click', () => {
-                currentSlide = (currentSlide + 1) % slides.length;
-                goToSlide(currentSlide);
-            });
-
-            // Предыдущий слайд
-            sliderPrev.addEventListener('click', () => {
-                currentSlide = (currentSlide - 1 + slides.length) % slides.length;
-                goToSlide(currentSlide);
-            });
-
-            // Автопереключение слайдов
-            setInterval(() => {
-                currentSlide = (currentSlide + 1) % slides.length;
-                goToSlide(currentSlide);
-            }, 5000);
-        }
-
-        // Функции для попапа
-        function showSuccessPopup() {
-            const popup = document.getElementById('successPopup');
-            popup.classList.remove('hidden');
-            setTimeout(() => {
-                popup.classList.add('opacity-100', 'scale-100');
-                popup.classList.remove('opacity-0', 'scale-95');
-            }, 50);
-        }
-
-        function closeSuccessPopup() {
-            const popup = document.getElementById('successPopup');
-            popup.classList.add('opacity-0', 'scale-95');
-            popup.classList.remove('opacity-100', 'scale-100');
-            setTimeout(() => {
-                popup.classList.add('hidden');
-            }, 300);
-        }
-
-        // Обработка формы с AJAX
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-
-            // Показываем индикатор загрузки
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Отправка...';
-            submitBtn.disabled = true;
-
-            const formData = new FormData(this);
-
-            fetch('/contact/submit', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => {
-                    if (response.ok) {
-                        // Показываем красивый попап
-                        showSuccessPopup();
-                        // Сбрасываем форму
-                        this.reset();
-                    } else {
-                        alert('Ошибка отправки формы. Пожалуйста, попробуйте еще раз.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Произошла ошибка при отправке формы');
-                })
-                .finally(() => {
-                    // Восстанавливаем кнопку
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
-                });
-        });
-
-        // Инициализация слайдеров при загрузке страницы
-        document.addEventListener('DOMContentLoaded', () => {
-            initSlider('logosSlider', 'logosPrev', 'logosNext', 'logosIndicators');
-            initSlider('reviewsSlider', 'reviewsPrev', 'reviewsNext', 'reviewsIndicators');
-
-            // Закрытие попапа по клику на фон
-            document.getElementById('successPopup').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeSuccessPopup();
-                }
-            });
-
-            // Закрытие попапа по ESC
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeSuccessPopup();
-                }
-            });
-        });
-    </script>
-
     <style>
         /* Анимации для попапа */
         #successPopup {
@@ -486,94 +508,88 @@ ob_start();
             border-radius: 4px;
         }
     </style>
-
     <script>
-        // Инициализация слайдеров
-        function initSlider(sliderTrackId, prevBtnId, nextBtnId, indicatorsId) {
-            const sliderTrack = document.getElementById(sliderTrackId);
-            const sliderPrev = document.getElementById(prevBtnId);
-            const sliderNext = document.getElementById(nextBtnId);
-            const sliderIndicators = document.getElementById(indicatorsId);
+        function initializeForm() {
+            const contactForm = document.getElementById('contactForm');
+            if (!contactForm) return;
 
-            const slides = document.querySelectorAll(`#${sliderTrackId} .slider-slide`);
-            if (slides.length === 0) return;
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
 
-            let currentSlide = 0;
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
 
-            // Создание индикаторов
-            slides.forEach((_, index) => {
-                const indicator = document.createElement('div');
-                indicator.classList.add('slider-indicator');
-                if (index === 0) indicator.classList.add('active');
-                indicator.addEventListener('click', () => goToSlide(index));
-                sliderIndicators.appendChild(indicator);
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Отправка...';
+                submitBtn.disabled = true;
+
+                const formData = new FormData(this);
+
+                fetch('/contact/submit', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            showSuccessPopup();
+                            this.reset();
+                        } else {
+                            alert('Ошибка отправки формы. Пожалуйста, попробуйте еще раз.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Произошла ошибка при отправке формы');
+                    })
+                    .finally(() => {
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    });
             });
-
-            // Функция перехода к слайду
-            function goToSlide(slideIndex) {
-                currentSlide = slideIndex;
-                sliderTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
-
-                // Обновление активного индикатора
-                document.querySelectorAll(`#${indicatorsId} .slider-indicator`).forEach((indicator, index) => {
-                    if (index === currentSlide) {
-                        indicator.classList.add('active');
-                    } else {
-                        indicator.classList.remove('active');
-                    }
-                });
-            }
-
-            // Следующий слайд
-            sliderNext.addEventListener('click', () => {
-                currentSlide = (currentSlide + 1) % slides.length;
-                goToSlide(currentSlide);
-            });
-
-            // Предыдущий слайд
-            sliderPrev.addEventListener('click', () => {
-                currentSlide = (currentSlide - 1 + slides.length) % slides.length;
-                goToSlide(currentSlide);
-            });
-
-            // Автопереключение слайдов
-            setInterval(() => {
-                currentSlide = (currentSlide + 1) % slides.length;
-                goToSlide(currentSlide);
-            }, 5000);
         }
 
-        // Инициализация слайдеров при загрузке страницы
-        document.addEventListener('DOMContentLoaded', () => {
-            initSlider('logosSlider', 'logosPrev', 'logosNext', 'logosIndicators');
-            initSlider('reviewsSlider', 'reviewsPrev', 'reviewsNext', 'reviewsIndicators');
-        });
+        function initializePopup() {
+            const successPopup = document.getElementById('successPopup');
+            if (!successPopup) return;
 
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+            // Закрытие попапа по клику на фон
+            successPopup.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeSuccessPopup();
+                }
+            });
 
-            const formData = new FormData(this);
+            // Закрытие попапа по ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeSuccessPopup();
+                }
+            });
+        }
 
-            fetch('/contact/submit', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => {
-                    if (response.redirected) {
-                        window.location.href = response.url;
-                    } else if (response.ok) {
-                        this.reset();
-                    } else {
-                        alert('Ошибка отправки формы. Пожалуйста, попробуйте еще раз.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Произошла ошибка при отправке формы');
-                });
+        function showSuccessPopup() {
+            const popup = document.getElementById('successPopup');
+            popup.classList.remove('hidden');
+            setTimeout(() => {
+                popup.classList.add('opacity-100', 'scale-100');
+                popup.classList.remove('opacity-0', 'scale-95');
+            }, 50);
+        }
+
+        function closeSuccessPopup() {
+            const popup = document.getElementById('successPopup');
+            popup.classList.add('opacity-0', 'scale-95');
+            popup.classList.remove('opacity-100', 'scale-100');
+            setTimeout(() => {
+                popup.classList.add('hidden');
+            }, 300);
+        }
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeForm();
+            initializePopup();
         });
     </script>
-
 <?php
 $content = ob_get_clean();
 include __DIR__ . '/../layouts/main.php';

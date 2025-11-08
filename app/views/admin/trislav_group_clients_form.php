@@ -39,17 +39,38 @@ $tariffs = $tariffs ?? [];
                               placeholder="Описание клиента..."><?= htmlspecialchars($item['description'] ?? '') ?></textarea>
                 </div>
 
+                <!-- Загрузка изображения с drop-зоной -->
                 <div>
-                    <label for="image" class="block mb-2 font-medium text-light">Изображение клиента</label>
-                    <input type="file" id="image" name="image"
-                           class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-highlight file:text-primary hover:file:bg-highlight/80"
-                           accept="image/*">
-                    <?php if (!empty($item['image_url'])): ?>
-                        <div class="mt-2">
-                            <p class="text-gray-400 text-sm">Текущее изображение:</p>
-                            <img src="<?= htmlspecialchars($item['image_url']) ?>" alt="Current image" class="mt-2 rounded-lg max-w-xs border border-highlight/30">
-                        </div>
-                    <?php endif; ?>
+                    <?php
+                    $currentImage = $item['image_url'] ?? '';
+
+                    // Переменные для компонента
+                    $fieldName = 'image';
+                    $currentFile = $currentImage;
+                    $label = 'Изображение клиента';
+                    $accept = 'image/*';
+                    $previewId = 'clientImagePreview';
+
+                    // Подключаем компонент
+                    $componentPath = __DIR__ . '/components/file_upload.php';
+                    if (file_exists($componentPath)) {
+                        include $componentPath;
+                    } else {
+                        // Fallback на старую версию если компонент не найден
+                        ?>
+                        <label class="block mb-2 font-medium text-light">Изображение клиента</label>
+                        <input type="file" id="image" name="image"
+                               class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-highlight file:text-primary hover:file:bg-highlight/80"
+                               accept="image/*">
+                        <?php if (!empty($item['image_url'])): ?>
+                            <div class="mt-2">
+                                <p class="text-gray-400 text-sm">Текущее изображение:</p>
+                                <img src="<?= htmlspecialchars($item['image_url']) ?>" alt="Current image" class="mt-2 rounded-lg max-w-xs border border-highlight/30">
+                            </div>
+                        <?php endif; ?>
+                        <?php
+                    }
+                    ?>
                 </div>
 
                 <div class="flex items-center">

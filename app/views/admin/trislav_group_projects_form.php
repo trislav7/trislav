@@ -1,5 +1,5 @@
 <?php
-// app/views/admin/trislav_group_projects_form.php (обновленная)
+// app/views/admin/trislav_group_projects_form.php
 ob_start();
 $isEdit = isset($item) && $item;
 ?>
@@ -15,7 +15,7 @@ $isEdit = isset($item) && $item;
         <div class="bg-secondary rounded-xl p-6 border border-highlight/30">
             <form method="POST" enctype="multipart/form-data" class="space-y-6">
                 <!-- Скрытое поле для сохранения старого изображения -->
-                <?php if ($isEdit && $item['image_url']): ?>
+                <?php if ($isEdit && !empty($item['image_url'])): ?>
                     <input type="hidden" name="old_image" value="<?= htmlspecialchars($item['image_url']) ?>">
                 <?php endif; ?>
 
@@ -46,14 +46,20 @@ $isEdit = isset($item) && $item;
                 <!-- Загрузка изображения -->
                 <div>
                     <?php
-                    $uploadParams = [
-                            'label' => 'Изображение проекта',
-                            'fieldName' => 'image',
-                            'currentFile' => $item['image_url'] ?? '',
-                            'accept' => 'image/*',
-                            'previewId' => 'imagePreview'
-                    ];
-                    include __DIR__ . '/components/file_upload.php';
+                    $currentImage = $item['image_url'] ?? '';
+
+                    // Переменные для компонента
+                    $fieldName = 'file';
+                    $currentFile = $currentImage;
+                    $label = 'Изображение проекта';
+                    $accept = 'image/*';
+                    $previewId = 'imagePreview';
+
+                    // Подключаем компонент
+                    $componentPath = __DIR__ . '/components/file_upload.php';
+                    if (file_exists($componentPath)) {
+                        include $componentPath;
+                    }
                     ?>
                 </div>
 

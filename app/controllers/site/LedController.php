@@ -26,7 +26,7 @@ class LedController extends Controller {
             'main_requirements' => array_column($mainRequirements, 'description'),
             'additional_requirements' => array_column($additionalRequirements, 'description'),
             'info_title' => 'Важная информация',
-            'info_content' => 'Для получения индивидуальной консультации по техническим требованиям свяжитесь с нашим специалистом.'
+            'info_content' => 'Можно разместить, как видео так и статическое изображение. Наша команда может помочь в разработке материалов, логотипов, постеров.'
         ];
 
         $this->view('site/led', [

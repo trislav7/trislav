@@ -100,16 +100,41 @@
 
             <?php if (!empty($tariffs)): ?>
                 <div class="grid grid-cols-1 <?= count($tariffs) <= 2 ? 'md:grid-cols-2 max-w-4xl mx-auto' : 'md:grid-cols-2 lg:grid-cols-'.min(4, count($tariffs)) ?> gap-6">
-                    <?php foreach ($tariffs as $tariff): ?>
+                    <?php foreach ($tariffs as $tariff):
+                        $hasDiscount = !empty($tariff['old_price']) && $tariff['old_price'] > $tariff['price'];
+                        $discountPercent = $hasDiscount ? round((($tariff['old_price'] - $tariff['price']) / $tariff['old_price']) * 100) : 0;
+                        ?>
                         <div class="tariff-card bg-white/5 rounded-xl p-8 text-center transition-all duration-300 border-2 <?= $tariff['is_popular'] ? 'border-highlight' : 'border-gray-700' ?> relative">
                             <?php if ($tariff['is_popular']): ?>
                                 <div class="absolute top-0 right-0 bg-highlight text-primary text-sm font-bold px-4 py-1 rounded-bl-lg">ПОПУЛЯРНЫЙ</div>
                             <?php endif; ?>
+
+                            <?php if ($hasDiscount): ?>
+                                <div class="absolute top-0 left-0 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-br-lg">
+                                    -<?= $discountPercent ?>%
+                                </div>
+                            <?php endif; ?>
+
                             <h3 class="text-2xl font-bold mb-4"><?= htmlspecialchars($tariff['title']) ?></h3>
-                            <div class="text-4xl font-bold text-highlight mb-6">
+
+                            <div class="text-4xl font-bold text-highlight mb-2">
                                 <?= number_format($tariff['price'], 0, '', ' ') ?> ₽
-                                <span class="text-lg text-gray-400">/<?= $tariff['period'] ?></span>
                             </div>
+
+                            <?php if ($hasDiscount): ?>
+                                <div class="text-lg text-gray-400 mb-4 line-through">
+                                    <?= number_format($tariff['old_price'], 0, '', ' ') ?> ₽
+                                </div>
+                            <?php else: ?>
+                                <div class="text-lg text-gray-400 mb-4">
+                                    &nbsp; <!-- Пустой пробел для выравнивания -->
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="text-sm text-gray-400 mb-6">
+                                /<?= $tariff['period'] ?>
+                            </div>
+
                             <ul class="space-y-3 mb-8">
                                 <?php
                                 $features = json_decode($tariff['features'], true) ?? [];
@@ -120,6 +145,7 @@
                                     </li>
                                 <?php endforeach; ?>
                             </ul>
+
                             <button onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})"
                                     class="w-full <?= $tariff['is_popular'] ? 'bg-highlight text-primary hover:bg-transparent hover:text-highlight' : 'bg-gray-700 text-light hover:bg-gray-600' ?> font-semibold py-3 rounded-lg transition-colors duration-300 border-2 border-highlight">
                                 Выбрать тариф
@@ -322,6 +348,11 @@
         </div>
     </div>
     <style>
+        .line-through {
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
         select option {
             background: #1a1a2e !important;
             color: #f1f1f1 !important;
