@@ -62,8 +62,8 @@ class AdminAuthController extends Controller {
 
     private function authenticate($username, $password) {
         // Простая аутентификация (ЗАМЕНИТЕ на свою!)
-        $validUsername = 'admin';
-        $validPassword = 'admin123';
+        $validUsername = 'brat';
+        $validPassword = '1Brat26';
 
         return $username === $validUsername && $password === $validPassword;
     }

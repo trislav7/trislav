@@ -82,6 +82,7 @@ class Router {
                     return;
                 }
 
+                // Вызываем метод контроллера с параметрами
                 call_user_func_array([$controller, $methodName], $params);
 
                 // ВАЖНО: выходим после успешного выполнения контроллера

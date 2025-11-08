@@ -51,12 +51,6 @@ if (isset($use_simple_layout) && $use_simple_layout):
                     </button>
                 </div>
             </form>
-
-            <div class="text-center text-sm text-gray-500">
-                <p>Тестовые данные:</p>
-                <p>Логин: <strong>admin</strong></p>
-                <p>Пароль: <strong>admin123</strong></p>
-            </div>
         </div>
     </div>
     </body>

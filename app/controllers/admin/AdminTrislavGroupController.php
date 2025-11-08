@@ -976,7 +976,6 @@ class AdminTrislavGroupController extends AdminBaseController {
     }
 
     public function download_shopping_center_videos() {
-
         $shoppingCenterId = $_GET['shopping_center_id'] ?? null;
         if (!$shoppingCenterId) {
             header('Location: /admin.php?action=trislav_shopping_centers&error=no_id');
@@ -994,9 +993,15 @@ class AdminTrislavGroupController extends AdminBaseController {
             }
 
 
-            // Получаем ВСЕ связи для этого ТЦ
-            $connectionModel = new TrislavGroupClientProject();
-            $connections = $connectionModel->getByShoppingCenter($shoppingCenterId);
+            // Генерируем имя архива на основе названия ТЦ (транслит + дата)
+            $translitTitle = $this->translit($shoppingCenter['title']);
+            $currentDate = date('d_m_Y');
+            $archiveName = $translitTitle . '_' . $currentDate . '.zip';
+
+
+            // Получаем последовательность видео для скачивания
+            $videoScheduleModel = new VideoSchedule();
+            $downloadSequence = $videoScheduleModel->getDownloadSequence($shoppingCenterId);
 
 
             // Создаем временную папку
@@ -1006,92 +1011,62 @@ class AdminTrislavGroupController extends AdminBaseController {
             }
 
             $videoFiles = [];
-            $counter = 1;
 
-            // Обрабатываем КАЖДУЮ связку для этого ТЦ
-            foreach ($connections as $connection) {
-
+            // Обрабатываем каждое видео в последовательности
+            foreach ($downloadSequence as $videoInfo) {
+                $slotNumber = $videoInfo['slot_number'];
                 $videoPath = null;
 
-                // Пробуем скачать с Яндекс.Диска
-                if (!empty($connection['yandex_disk_path'])) {
-                    $videoPath = $this->downloadFromYandexDisk(
-                        $connection['yandex_disk_path'],
-                        $tempDir,
-                        $counter
-                    );
-                }
-                // Если нет на Яндекс.Диске, пробуем локальный файл
-                elseif (!empty($connection['video_filename'])) {
-                    $videoPath = $this->copyLocalVideo(
-                        $connection['video_filename'],
-                        $tempDir,
-                        $counter
-                    );
-                }
-                // Если есть только URL видео
-                elseif (!empty($connection['video'])) {
-                    $videoPath = $this->downloadVideoFromUrl(
-                        $connection['video'],
-                        $tempDir,
-                        $counter
-                    );
+                // Если это реальный клиент (не заглушка)
+                if (!$videoInfo['is_default']) {
+                    // Пробуем скачать с Яндекс.Диска (приоритет 1)
+                    if (!empty($videoInfo['yandex_disk_path'])) {
+                        $videoPath = $this->downloadFromYandexDisk(
+                            $videoInfo['yandex_disk_path'],
+                            $tempDir,
+                            $slotNumber
+                        );
+                    }
+                    // Пробуем локальный файл (приоритет 2)
+                    elseif (!empty($videoInfo['filename'])) {
+                        $videoPath = $this->copyLocalVideo(
+                            $videoInfo['filename'],
+                            $tempDir,
+                            $slotNumber
+                        );
+                    }
+                    // Пробуем скачать по URL (приоритет 3)
+                    elseif (!empty($videoInfo['video_url'])) {
+                        $videoPath = $this->downloadVideoFromUrl(
+                            $videoInfo['video_url'],
+                            $tempDir,
+                            $slotNumber
+                        );
+                    }
                 }
 
-                // Если видео не найдено - используем заглушку
+                // Если видео не найдено или это заглушка - используем заглушку
                 if (!$videoPath) {
-                    $videoPath = $this->copyDefaultAd($tempDir, $counter);
+                    $videoPath = $this->copyDefaultAd($tempDir, $slotNumber);
                 }
 
                 if ($videoPath) {
                     $videoFiles[] = $videoPath;
-                    $counter++;
-                }
-            }
-
-            // ДОБАВЛЯЕМ ЗАГЛУШКИ ДЛЯ ПРОПУЩЕННЫХ СЛОТОВ
-            // Создаем полный набор файлов от 00001 до максимального номера
-            $maxSlots = 48; // Максимальное количество слотов
-            $fullVideoFiles = [];
-
-            for ($i = 1; $i <= $maxSlots; $i++) {
-                $expectedFilename = sprintf("%05d", $i) . '.mp4';
-                $expectedPath = $tempDir . '/' . $expectedFilename;
-
-                // Ищем существующий файл с таким номером
-                $existingFile = null;
-                foreach ($videoFiles as $videoFile) {
-                    if (basename($videoFile) === $expectedFilename) {
-                        $existingFile = $videoFile;
-                        break;
-                    }
-                }
-
-                if ($existingFile) {
-                    $fullVideoFiles[] = $existingFile;
                 } else {
-                    // Заполняем пропуск заглушкой
-                    $placeholderPath = $this->copyDefaultAd($tempDir, $i);
-                    if ($placeholderPath) {
-                        $fullVideoFiles[] = $placeholderPath;
-                    }
                 }
             }
 
 
             // Создаем архив
-            if (!empty($fullVideoFiles)) {
-                $archivePath = $this->createNumberedArchive($fullVideoFiles, $tempDir, $shoppingCenter['title']);
+            if (!empty($videoFiles)) {
+                $archivePath = $this->createNumberedArchive($videoFiles, $tempDir, $archiveName);
 
                 // Отправляем архив
-                $this->sendArchiveForDownload($archivePath, $shoppingCenter['title']);
-
+                $this->sendArchiveForDownload($archivePath, $archiveName);
 
                 // Очищаем временные файлы ПОСЛЕ отправки архива
                 $this->cleanupTempFiles($tempDir);
 
-
-                // Выходим после очистки
                 exit;
             } else {
                 header('Location: /admin.php?action=trislav_shopping_centers&error=no_videos_found');
@@ -1104,19 +1079,40 @@ class AdminTrislavGroupController extends AdminBaseController {
         }
     }
 
-    public function test_download_simple() {
+    /**
+     * Транслитерация русского текста
+     */
+    private function translit($string) {
+        $converter = array(
+            'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'g', 'д' => 'd',
+            'е' => 'e', 'ё' => 'e', 'ж' => 'zh', 'з' => 'z', 'и' => 'i',
+            'й' => 'y', 'к' => 'k', 'л' => 'l', 'м' => 'm', 'н' => 'n',
+            'о' => 'o', 'п' => 'p', 'р' => 'r', 'с' => 's', 'т' => 't',
+            'у' => 'u', 'ф' => 'f', 'х' => 'h', 'ц' => 'c', 'ч' => 'ch',
+            'ш' => 'sh', 'щ' => 'sch', 'ь' => '', 'ы' => 'y', 'ъ' => '',
+            'э' => 'e', 'ю' => 'yu', 'я' => 'ya',
 
-        // Просто создаем тестовый файл и отдаем его
-        $testContent = "Тестовый файл для проверки скачивания\n";
-        $testContent .= "ТЦ ID: " . ($_GET['shopping_center_id'] ?? 'unknown') . "\n";
-        $testContent .= "Время: " . date('Y-m-d H:i:s') . "\n";
+            'А' => 'A', 'Б' => 'B', 'В' => 'V', 'Г' => 'G', 'Д' => 'D',
+            'Е' => 'E', 'Ё' => 'E', 'Ж' => 'Zh', 'З' => 'Z', 'И' => 'I',
+            'Й' => 'Y', 'К' => 'K', 'Л' => 'L', 'М' => 'M', 'Н' => 'N',
+            'О' => 'O', 'П' => 'P', 'Р' => 'R', 'С' => 'S', 'Т' => 'T',
+            'У' => 'U', 'Ф' => 'F', 'Х' => 'H', 'Ц' => 'C', 'Ч' => 'Ch',
+            'Ш' => 'Sh', 'Щ' => 'Sch', 'Ь' => '', 'Ы' => 'Y', 'Ъ' => '',
+            'Э' => 'E', 'Ю' => 'Yu', 'Я' => 'Ya',
+        );
 
-        $filename = 'test_download_' . time() . '.txt';
+        $string = strtr($string, $converter);
 
-        header('Content-Type: text/plain');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        echo $testContent;
-        exit;
+        // Заменяем все не-ASCII символы и пробелы на подчеркивания
+        $string = preg_replace('/[^a-zA-Z0-9_]/', '_', $string);
+
+        // Убираем множественные подчеркивания
+        $string = preg_replace('/_{2,}/', '_', $string);
+
+        // Убираем подчеркивания в начале и конце
+        $string = trim($string, '_');
+
+        return $string;
     }
 
     /**
@@ -1160,8 +1156,7 @@ class AdminTrislavGroupController extends AdminBaseController {
     /**
      * Создает архив с правильно пронумерованными файлами
      */
-    private function createNumberedArchive($files, $tempDir, $shoppingCenterTitle) {
-        $archiveName = 'videos_' . preg_replace('/[^a-zA-Z0-9]/', '_', $shoppingCenterTitle) . '.zip';
+    private function createNumberedArchive($files, $tempDir, $archiveName) {
         $archivePath = $tempDir . '/' . $archiveName;
 
         $zip = new ZipArchive();
@@ -1184,18 +1179,15 @@ class AdminTrislavGroupController extends AdminBaseController {
     /**
      * Отправляет архив на скачивание
      */
-    private function sendArchiveForDownload($archivePath, $shoppingCenterTitle) {
+    private function sendArchiveForDownload($archivePath, $archiveName) {
         if (!file_exists($archivePath)) {
             throw new Exception("Archive file not found: $archivePath");
         }
-
 
         // Очищаем все буферы вывода
         while (ob_get_level() > 0) {
             ob_end_clean();
         }
-
-        $archiveName = 'videos_' . preg_replace('/[^a-zA-Z0-9]/', '_', $shoppingCenterTitle) . '.zip';
 
         header('Content-Description: File Transfer');
         header('Content-Type: application/zip');
@@ -1208,14 +1200,8 @@ class AdminTrislavGroupController extends AdminBaseController {
 
         // Читаем и отправляем файл
         readfile($archivePath);
-
-
-        // НЕ ВЫХОДИМ здесь, чтобы выполнилась очистка
     }
 
-    /**
-     * Очищает временные файлы
-     */
     /**
      * Очищает временные файлы включая архив
      */
@@ -1278,24 +1264,55 @@ class AdminTrislavGroupController extends AdminBaseController {
      * Копирует заглушку с правильным именем
      */
     private function copyDefaultAd($tempDir, $counter) {
-        $defaultAdPath = ROOT_PATH . '/uploads/video/default_ad.mp4';
+        $defaultVideosDir = './uploads/def_video/';
 
-        if (!file_exists($defaultAdPath)) {
-            // Создаем пустой файл как заглушку
+
+        // Проверяем существование директории
+        if (!is_dir($defaultVideosDir)) {
+
+            // Фолбэк на создание пустого файла
             $filename = sprintf("%05d", $counter) . '.mp4';
             $newPath = $tempDir . '/' . $filename;
             file_put_contents($newPath, '');
             return $newPath;
         }
 
-        $filename = sprintf("%05d", $counter) . '.mp4';
-        $newPath = $tempDir . '/' . $filename;
+        // Получаем список видео файлов
+        $videoFiles = [];
+        $allowedExtensions = ['mp4', 'avi', 'mov', 'mkv', 'wmv'];
 
-        if (copy($defaultAdPath, $newPath)) {
+        foreach ($allowedExtensions as $ext) {
+            $pattern = $defaultVideosDir . '*.' . $ext;
+            $files = glob($pattern);
+            $videoFiles = array_merge($videoFiles, $files);
+        }
+
+
+        if (empty($videoFiles)) {
+
+            // Фолбэк на создание пустого файла
+            $filename = sprintf("%05d", $counter) . '.mp4';
+            $newPath = $tempDir . '/' . $filename;
+            file_put_contents($newPath, '');
             return $newPath;
         }
 
-        return null;
+        // Выбираем случайное видео
+        $randomIndex = array_rand($videoFiles);
+        $selectedVideo = $videoFiles[$randomIndex];
+
+
+        $filename = sprintf("%05d", $counter) . '.mp4';
+        $newPath = $tempDir . '/' . $filename;
+
+        // Копируем выбранное видео
+        if (copy($selectedVideo, $newPath)) {
+            return $newPath;
+        } else {
+            // Фолбэк на создание пустого файла
+            file_put_contents($newPath, '');
+            return $newPath;
+        }
     }
 
     public function trislav_media_dashboard() {
@@ -1656,8 +1673,6 @@ class AdminTrislavGroupController extends AdminBaseController {
     public function reviews_delete() {
         $id = $_GET['id'] ?? null;
         if ($id) {
-            debug_log("=== reviews_delete START ===");
-            debug_log("Deleting review ID: " . $id);
 
             $reviewModel = new TrislavGroupReview();
             $review = $reviewModel->find($id);
@@ -1665,18 +1680,14 @@ class AdminTrislavGroupController extends AdminBaseController {
             if ($review) {
                 // Удаляем аватар если есть
                 if (!empty($review['author_avatar'])) {
-                    debug_log("Deleting review avatar: " . $review['author_avatar']);
                     $this->deleteOldReviewImage($review['author_avatar']);
                 }
 
                 // Удаляем отзыв из БД
                 $deleted = $reviewModel->delete($id);
-                debug_log("Review deleted from DB: " . ($deleted ? 'YES' : 'NO'));
             } else {
-                debug_log("Review not found with ID: " . $id);
             }
 
-            debug_log("=== reviews_delete END ===");
         }
 
         header('Location: /admin.php?action=trislav_reviews&success=1');

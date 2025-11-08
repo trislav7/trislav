@@ -146,7 +146,8 @@ class AdminAIAssistantController extends AdminBaseController {
 
         $prompt .= "💬 **ВОПРОС:** {$question}\n\n";
         $prompt .= "**Для дебага используй debug_log**\n\n";
-        $prompt .= "**ПРИМЕЧАНИЕ:** Показаны только основные файлы системы. Если нужны конкретные файлы - уточните какие.\n\n";
+        $prompt .= "**ПРИМЕЧАНИЕ:** Показаны только основные файлы системы. Какие еще файлы надо показать для решения задачи?\n\n";
+        $prompt .= "**Если вносишь изменения в файлы, дай название файлов в которые вносишь изменения**";
         $prompt .= "**Отвечай учитывая архитектуру проекта. Предлагай решения в рамках существующей структуры.**";
 
         return $prompt;
@@ -262,7 +263,7 @@ class AdminAIAssistantController extends AdminBaseController {
 
             // === КОНФИГУРАЦИЯ ===
             '/config/database.php',
-            '/config/domains.php',
+//            '/config/domains.php',
 
             // === ГЛАВНЫЕ ФАЙЛЫ ===
             '/admin.php',
@@ -271,35 +272,35 @@ class AdminAIAssistantController extends AdminBaseController {
             // === БАЗОВЫЕ КОНТРОЛЛЕРЫ ===
             '/app/controllers/Controller.php',
             '/app/controllers/admin/AdminBaseController.php',
-            '/app/controllers/admin/AdminAIAssistantController.php',
+//            '/app/controllers/admin/AdminAIAssistantController.php',
 
             // === ОСНОВНЫЕ МОДЕЛИ ===
             '/app/models/Model.php',
-            '/app/models/Service.php',
-            '/app/models/Tariff.php',
-            '/app/models/Portfolio.php',
-            '/app/models/Lead.php',
-            '/app/models/SiteSetting.php',
+//            '/app/models/Service.php',
+//            '/app/models/Tariff.php',
+//            '/app/models/Portfolio.php',
+//            '/app/models/Lead.php',
+//            '/app/models/SiteSetting.php',
 
             // === ПРИМЕРЫ МОДЕЛЕЙ (по одной из каждой категории) ===
             '/app/models/TrislavGroupProject.php',    // Пример модели Трислав Групп
-            '/app/models/LedAdvantage.php',           // Пример LED модели
+//            '/app/models/LedAdvantage.php',           // Пример LED модели
 
             // === ОСНОВНЫЕ КОНТРОЛЛЕРЫ АДМИНКИ ===
-            '/app/controllers/admin/AdminServicesController.php',
+//            '/app/controllers/admin/AdminServicesController.php',
             '/app/controllers/admin/AdminTrislavGroupController.php',
-            '/app/controllers/admin/AdminSettingsController.php',
+//            '/app/controllers/admin/AdminSettingsController.php',
 
             // === ПРИМЕРЫ КОНТРОЛЛЕРОВ АДМИНКИ ===
-            '/app/controllers/admin/AdminPortfolioController.php', // Пример контроллера портфолио
-            '/app/controllers/admin/AdminLedAdvantagesController.php', // Пример LED контроллера
+//            '/app/controllers/admin/AdminPortfolioController.php', // Пример контроллера портфолио
+//            '/app/controllers/admin/AdminLedAdvantagesController.php', // Пример LED контроллера
 
             // === КОНТРОЛЛЕРЫ САЙТА ===
             '/app/controllers/site/HomeController.php',
             '/app/controllers/site/TrislavGroupController.php',
 
             // === ПРИМЕРЫ КОНТРОЛЛЕРОВ САЙТА ===
-            '/app/controllers/site/LedController.php', // Пример LED контроллера сайта
+//            '/app/controllers/site/LedController.php', // Пример LED контроллера сайта
 
             // === ОСНОВНЫЕ ПРЕДСТАВЛЕНИЯ ===
             '/app/views/layouts/main.php',
@@ -308,14 +309,14 @@ class AdminAIAssistantController extends AdminBaseController {
             '/app/views/site/trislav_group.php',
 
             // === ПРИМЕРЫ ПРЕДСТАВЛЕНИЙ ===
-            '/app/views/site/led.php', // Пример LED представления
-            '/app/views/admin/dashboard.php', // Пример админ представления
-            '/app/views/admin/services_form.php', // Пример формы админки
+//            '/app/views/site/led.php', // Пример LED представления
+//            '/app/views/admin/dashboard.php', // Пример админ представления
+//            '/app/views/admin/services_form.php', // Пример формы админки
 
             // === КОМПОНЕНТЫ ===
-            '/app/views/components/header.php',
-            '/app/views/components/header_trislav_group.php',
-            '/app/views/components/footer.php',
+//            '/app/views/components/header.php',
+//            '/app/views/components/header_trislav_group.php',
+//            '/app/views/components/footer.php',
         ];
     }
 

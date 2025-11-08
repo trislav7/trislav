@@ -2,13 +2,41 @@
 class Portfolio extends Model {
     protected $table = 'portfolio';
 
+    public function getVideosByCategory($category, $limit = null) {
+        $cacheKey = "portfolio_videos_{$category}" . ($limit ? "_$limit" : '');
+
+        if ($cached = $this->cache->get($cacheKey)) {
+            return $cached;
+        }
+
+        $sql = "SELECT * FROM portfolio 
+                WHERE category = ? AND is_active = 1 
+                AND (video_filename IS NOT NULL OR video_url IS NOT NULL)
+                ORDER BY project_date DESC";
+        $params = [$category];
+
+        if ($limit) {
+            $sql .= " LIMIT ?";
+            $params[] = (int)$limit;
+        }
+
+        $result = $this->db->fetchAll($sql, $params);
+
+        $this->cache->set($cacheKey, $result);
+        return $result;
+    }
+
+    // НОВЫЙ МЕТОД: Обновить видео информацию
+    public function updateVideoInfo($id, $videoData) {
+        return $this->update($id, $videoData);
+    }
+
     public function getByCategory($category, $limit = null) {
         $cacheKey = "portfolio_{$category}" . ($limit ? "_$limit" : '');
 
         if ($cached = $this->cache->get($cacheKey)) {
             return $cached;
         }
-
 
         $sql = "SELECT * FROM portfolio WHERE category = ? AND is_active = 1 ORDER BY project_date DESC";
         $params = [$category];
@@ -26,7 +54,6 @@ class Portfolio extends Model {
 
     public function getAllActive($limit = 6) {
         $cacheKey = "all_active_portfolio_$limit";
-
 
         if ($cached = $this->cache->get($cacheKey)) {
             return $cached;
@@ -59,8 +86,6 @@ class Portfolio extends Model {
             return $cached;
         }
 
-
-        // 🔥 ИСПРАВЛЕНИЕ: Явно преобразуем лимит в целое число
         $intLimit = (int)$limit;
 
         $result = $this->db->fetchAll("

@@ -65,20 +65,36 @@ class AdminPortfolioController extends AdminBaseController {
                 'client_name' => $_POST['client_name'],
                 'project_date' => $_POST['project_date'],
                 'is_active' => isset($_POST['is_active']) ? 1 : 0,
-                'image' => '' // Временно пустое значение
+                'image' => '', // Временно пустое значение
+                'video_url' => $_POST['video_url'] ?? null,
+                'video_filename' => null,
+                'yandex_disk_path' => null // Всегда null для портфолио
             ];
 
             // Создаем запись и получаем ID
             $portfolioId = $portfolioModel->create($data);
 
             if ($portfolioId) {
-                // Теперь обрабатываем загрузку изображения с правильным именем
+                // Обрабатываем загрузку изображения
                 if ($_FILES['image']['error'] === UPLOAD_ERR_OK) {
                     $imagePath = $this->handleImageUpload($_FILES['image'], $portfolioId);
-
                     if ($imagePath) {
-                        // Обновляем запись с правильным путем к изображению
                         $portfolioModel->update($portfolioId, ['image' => $imagePath]);
+                    }
+                }
+
+                // ОБРАБОТКА ЗАГРУЗКИ ВИДЕО ФАЙЛА - ТОЛЬКО ЛОКАЛЬНО
+                if (isset($_FILES['video_file']) && $_FILES['video_file']['error'] === UPLOAD_ERR_OK) {
+                    debug_log("Starting local video upload for portfolio ID: " . $portfolioId);
+                    $videoResult = $this->saveVideoLocally($_FILES['video_file'], $portfolioId);
+
+                    if ($videoResult) {
+                        $portfolioModel->updateVideoInfo($portfolioId, [
+                            'video_filename' => $videoResult['filename'],
+                            'yandex_disk_path' => null, // Всегда null для портфолио
+                            'video_url' => null // Очищаем URL если загружаем файл
+                        ]);
+                        debug_log("Video saved locally for portfolio: " . $videoResult['filename']);
                     }
                 }
 
@@ -89,9 +105,43 @@ class AdminPortfolioController extends AdminBaseController {
         }
 
         $this->view('admin/portfolio_form', [
-            'title' => 'Добавить работу в портфолио'
+            'title' => 'Добавить работу в портфолио',
+            'portfolio' => null
         ]);
     }
+
+    /**
+     * Сохранение видео локально - ЕДИНСТВЕННЫЙ МЕТОД ДЛЯ ПОРТФОЛИО
+     */
+    private function saveVideoLocally($file, $portfolioId) {
+        debug_log("Saving video locally for portfolio ID: " . $portfolioId);
+
+        if ($file['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = ROOT_PATH . '/uploads/videos/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filename = 'portfolio_' . $portfolioId . '.' . $extension;
+            $filePath = $uploadDir . $filename;
+
+            if (move_uploaded_file($file['tmp_name'], $filePath)) {
+                debug_log("Video saved locally: " . $filePath);
+                return [
+                    'filename' => $filename,
+                    'disk_path' => null // Всегда null для портфолио
+                ];
+            } else {
+                debug_log("Failed to move uploaded file: " . $file['tmp_name'] . " to " . $filePath);
+            }
+        } else {
+            debug_log("Video file upload error: " . $file['error']);
+        }
+
+        return null;
+    }
+
 
     public function edit() {
         $id = $_GET['id'] ?? null;
@@ -111,33 +161,51 @@ class AdminPortfolioController extends AdminBaseController {
                 'tags' => json_encode(array_map('trim', explode(",", $_POST['tags']))),
                 'client_name' => $_POST['client_name'],
                 'project_date' => $_POST['project_date'],
-                'is_active' => isset($_POST['is_active']) ? 1 : 0
+                'is_active' => isset($_POST['is_active']) ? 1 : 0,
+                'video_url' => $_POST['video_url'] ?? null
             ];
 
-            // ПРОВЕРКА НА УДАЛЕНИЕ ТЕКУЩЕГО ИЗОБРАЖЕНИЯ
-            $removeImage = isset($_POST['remove_image']) && $_POST['remove_image'] === 'on';
+            // ОБРАБОТКА УДАЛЕНИЯ ВИДЕО
+            $removeVideo = isset($_POST['remove_video']) && $_POST['remove_video'] === 'on';
+            if ($removeVideo) {
+                debug_log("Removing video for portfolio ID: " . $id);
+                $this->deletePortfolioVideo($portfolio);
+                $data['video_filename'] = null;
+                $data['yandex_disk_path'] = null;
+                $data['video_url'] = null;
+            }
 
-            if ($removeImage) {
-                $data['image'] = '';
-                // Удаляем старое изображение если есть
-                if (!empty($portfolio['image'])) {
-                    $this->deleteOldImage($portfolio['image']);
+            // ОБРАБОТКА ЗАГРУЗКИ НОВОГО ВИДЕО - ТОЛЬКО ЛОКАЛЬНО
+            if (isset($_FILES['video_file']) && $_FILES['video_file']['error'] === UPLOAD_ERR_OK) {
+                debug_log("Uploading new video for portfolio ID: " . $id);
+                // Удаляем старое видео если есть
+                $this->deletePortfolioVideo($portfolio);
+
+                $videoResult = $this->saveVideoLocally($_FILES['video_file'], $id);
+                if ($videoResult) {
+                    $data['video_filename'] = $videoResult['filename'];
+                    $data['yandex_disk_path'] = null; // Всегда null для портфолио
+                    $data['video_url'] = null; // Очищаем URL если загружаем файл
+                    debug_log("New video saved locally: " . $videoResult['filename']);
                 }
             }
-            // ЗАГРУЗКА НОВОГО ИЗОБРАЖЕНИЯ
-            else if ($_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                // Удаляем старое изображение если есть
+
+            // Обработка изображения (существующий код)...
+            $removeImage = isset($_POST['remove_image']) && $_POST['remove_image'] === 'on';
+            if ($removeImage) {
+                $data['image'] = '';
                 if (!empty($portfolio['image'])) {
                     $this->deleteOldImage($portfolio['image']);
                 }
-
-                // Загружаем новое изображение с правильным именем
+            } else if ($_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                if (!empty($portfolio['image'])) {
+                    $this->deleteOldImage($portfolio['image']);
+                }
                 $imagePath = $this->handleImageUpload($_FILES['image'], $id);
                 if ($imagePath) {
                     $data['image'] = $imagePath;
                 }
             } else {
-                // Сохраняем существующее изображение
                 $data['image'] = $portfolio['image'] ?? '';
             }
 
@@ -152,6 +220,34 @@ class AdminPortfolioController extends AdminBaseController {
             'portfolio' => $portfolio,
             'title' => 'Редактировать работу'
         ]);
+    }
+
+    private function deletePortfolioVideo($portfolio) {
+        debug_log("Deleting portfolio video for portfolio ID: " . ($portfolio['id'] ?? 'unknown'));
+
+        // УДАЛЯЕМ ТОЛЬКО ЛОКАЛЬНЫЙ ФАЙЛ
+        if (!empty($portfolio['video_filename'])) {
+            $localPath = ROOT_PATH . '/uploads/videos/' . $portfolio['video_filename'];
+            if (file_exists($localPath)) {
+                if (unlink($localPath)) {
+                    debug_log("Successfully deleted local portfolio video: " . $localPath);
+                } else {
+                    debug_log("Failed to delete local portfolio video: " . $localPath);
+                }
+            } else {
+                debug_log("Local video file not found: " . $localPath);
+            }
+        }
+
+        // УДАЛЯЕМ ВРЕМЕННЫЙ ФАЙЛ ЕСЛИ ЕСТЬ
+        if (!empty($portfolio['video_filename'])) {
+            $tempPath = ROOT_PATH . '/uploads/videos/temp/' . $portfolio['video_filename'];
+            if (file_exists($tempPath)) {
+                if (unlink($tempPath)) {
+                    debug_log("Successfully deleted temp portfolio video: " . $tempPath);
+                }
+            }
+        }
     }
 
     private function handleImageUpload($file, $portfolioId = null) {
@@ -227,6 +323,11 @@ class AdminPortfolioController extends AdminBaseController {
             // Удаляем изображение если есть
             if (!empty($portfolio['image'])) {
                 $this->deleteOldImage($portfolio['image']);
+            }
+
+            // Удаляем видео если есть
+            if (!empty($portfolio['video_filename'])) {
+                $this->deletePortfolioVideo($portfolio);
             }
 
             $portfolioModel->delete($id);

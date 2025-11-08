@@ -69,6 +69,7 @@ $router->add('GET', '/privacy-policy', 'TrislavGroupController@privacyPolicy');
 if (IS_TRISLAV_MEDIA) {
     $router->add('GET', '/privacy-policy', 'HomeController@privacyPolicy');
 }
+$router->add('GET', '/video/stream', 'VideoProxyController@stream');
 
 // ЯВНО УСТАНАВЛИВАЕМ ЗАГОЛОВОК 200 ПЕРЕД РОУТЕРОМ
 if (!headers_sent()) {

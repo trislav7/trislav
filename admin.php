@@ -106,7 +106,14 @@ if (strpos($action, 'services_') === 0) {
     if ($method === '_edit') {
         $method = 'edit';
     }
-
+} elseif ($action === 'cache_stats') {
+    // ДОБАВЛЯЕМ ОБРАБОТКУ ДЛЯ СТАТИСТИКИ КЭША
+    $controller = new AdminActionsController();
+    $method = 'cache_stats';
+} elseif ($action === 'reset_cache_stats') {
+    // ДОБАВЛЯЕМ ОБРАБОТКУ ДЛЯ СБРОСА СТАТИСТИКИ КЭША
+    $controller = new AdminActionsController();
+    $method = 'reset_cache_stats';
 } else {
     $controller = new AdminAuthController();
     $method = $action;

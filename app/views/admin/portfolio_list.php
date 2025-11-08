@@ -44,19 +44,6 @@ $current_category = $current_category ?? 'all';
             </div>
         <?php endif; ?>
 
-        <?php if (isset($_SESSION['flash_message'])): ?>
-            <?php
-            // Временное решение для получения flash сообщения
-            $flash = $_SESSION['flash_message'] ?? null;
-            unset($_SESSION['flash_message']);
-            ?>
-            <?php if ($flash): ?>
-                <div class="bg-green-500/20 border border-green-500 text-green-300 px-4 py-3 rounded-lg">
-                    <?= $flash ?>
-                </div>
-            <?php endif; ?>
-        <?php endif; ?>
-
         <div class="bg-secondary rounded-xl border border-highlight/30 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full">

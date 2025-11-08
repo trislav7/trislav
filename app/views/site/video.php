@@ -128,8 +128,8 @@
             </div>
         </div>
     </section>
-    <!-- Портфолио -->
-<?php if (!empty($portfolio) && is_array($portfolio)): ?>
+
+    <!-- Блок "Наши работы" со слайдером -->
     <section id="portfolio" class="py-16 bg-primary px-4">
         <div class="container mx-auto max-w-6xl">
             <div class="text-center mb-16">
@@ -137,63 +137,92 @@
                 <p class="text-lg text-gray-300 max-w-2xl mx-auto">Примеры созданных нами видеороликов и логотипов</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <?php foreach ($portfolio as $item): ?>
-                    <?php if ($item['is_active']): ?>
-                        <div class="portfolio-item bg-white/5 rounded-xl overflow-hidden transition-all duration-300 hover:transform hover:scale-105">
-                            <!-- Блок с градиентом и названием -->
-                            <div class="h-48 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                        <span class="text-white text-xl font-bold text-center px-4">
-                            <?= !empty($item['client_name']) ? htmlspecialchars($item['client_name']) : htmlspecialchars($item['title']) ?>
-                        </span>
-                            </div>
+            <?php
+            // Получаем видео работы из портфолио
+            $portfolioModel = new Portfolio();
+            $videoWorks = $portfolioModel->getVideosByCategory('video', 10);
+            ?>
 
-                            <div class="p-6">
-                                <!-- Заголовок (используем client_name или первую часть title) -->
-                                <h3 class="text-xl font-bold text-highlight mb-2">
-                                    <?= htmlspecialchars($item['title']) ?>
-                                </h3>
+            <?php if (!empty($videoWorks)): ?>
+                <!-- Слайдер для видео работ -->
+                <div class="video-works-slider">
+                    <?php foreach ($videoWorks as $work): ?>
+                        <div class="px-3">
+                            <div class="bg-white/5 rounded-xl p-4 mx-auto border border-highlight/20 h-full flex flex-col">
+                                <div class="mb-3">
+                                    <h3 class="text-lg font-bold text-highlight mb-1">
+                                        <?= htmlspecialchars($work['title']) ?>
+                                    </h3>
+                                    <?php if (!empty($work['client_name'])): ?>
+                                        <p class="text-gray-400 text-xs">Клиент: <?= htmlspecialchars($work['client_name']) ?></p>
+                                    <?php endif; ?>
+                                </div>
 
-                                <!-- Описание -->
-                                <?php if (!empty($item['description'])): ?>
-                                    <p class="text-gray-300 mb-4"><?= htmlspecialchars($item['description']) ?></p>
+                                <!-- Видео плеер с вертикальным соотношением 9:16 -->
+                                <div class="video-container mb-3 rounded-lg overflow-hidden flex-grow">
+                                    <?php if (!empty($work['video_url'])): ?>
+                                        <!-- Встроенное видео с YouTube/Vimeo -->
+                                        <div class="aspect-w-9 aspect-h-16">
+                                            <iframe src="<?= htmlspecialchars($work['video_url']) ?>"
+                                                    frameborder="0"
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                    allowfullscreen
+                                                    class="w-full h-full video-iframe"
+                                                    data-video-id="<?= $work['id'] ?>">
+                                            </iframe>
+                                        </div>
+                                    <?php elseif (!empty($work['yandex_disk_path']) || !empty($work['video_filename'])): ?>
+                                        <!-- Видео с Яндекс.Диска или локальное -->
+                                        <div class="aspect-w-9 aspect-h-16">
+                                            <video controls class="w-full h-full rounded-lg portfolio-video"
+                                                   data-video-id="<?= $work['id'] ?>">
+                                                <source src="<?= getPortfolioVideoUrl($work) ?>" type="video/mp4">
+                                                Ваш браузер не поддерживает видео.
+                                            </video>
+                                        </div>
+                                    <?php else: ?>
+                                        <!-- Заглушка если видео нет -->
+                                        <div class="w-full h-64 bg-highlight/20 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-video text-4xl text-highlight/50"></i>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- Описание работы -->
+                                <?php if (!empty($work['description'])): ?>
+                                    <p class="text-gray-300 mb-3 leading-relaxed text-sm line-clamp-3">
+                                        <?= htmlspecialchars($work['description']) ?>
+                                    </p>
                                 <?php endif; ?>
 
                                 <!-- Теги -->
-                                <?php if (!empty($item['tags'])): ?>
-                                    <div class="flex flex-wrap gap-2">
+                                <?php if (!empty($work['tags'])): ?>
+                                    <div class="flex flex-wrap gap-1 mt-auto">
                                         <?php
-                                        // Обрабатываем JSON теги
-                                        $tags = [];
-                                        if (is_string($item['tags'])) {
-                                            $tags = json_decode($item['tags'], true) ?? [];
-                                        } elseif (is_array($item['tags'])) {
-                                            $tags = $item['tags'];
-                                        }
-
-                                        // Выводим теги
-                                        if (!empty($tags) && is_array($tags)):
-                                            foreach ($tags as $tag):
-                                                if (!empty(trim($tag))):
-                                                    ?>
-                                                    <span class="bg-highlight/20 text-highlight px-2 py-1 rounded text-xs">
-                                        <?= htmlspecialchars(trim($tag)) ?>
-                                    </span>
-                                                <?php
-                                                endif;
-                                            endforeach;
-                                        endif;
+                                        $tags = json_decode($work['tags'], true) ?? [];
+                                        foreach ($tags as $tag):
+                                            if (trim($tag)):
+                                                ?>
+                                                <span class="bg-highlight/20 text-highlight px-2 py-1 rounded-full text-xs">
+                                                    <?= htmlspecialchars(trim($tag)) ?>
+                                                </span>
+                                            <?php
+                                            endif;
+                                        endforeach;
                                         ?>
                                     </div>
                                 <?php endif; ?>
                             </div>
                         </div>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="text-center py-8">
+                    <p class="text-gray-400">Видео работы скоро появятся</p>
+                </div>
+            <?php endif; ?>
         </div>
     </section>
-<?php endif; ?>
 
     <!-- Контактная форма -->
     <section id="contact" class="py-16 bg-secondary px-4">
@@ -317,34 +346,332 @@
             </div>
         </div>
     </div>
-<style>
-    select option {
-        background: #1a1a2e !important;
-        color: #f1f1f1 !important;
-        padding: 12px;
-    }
 
-    select:focus option {
-        background: #16213e !important;
-    }
+    <style>
+        .video-works-slider .slick-list {
+            margin: 0 -8px;
+        }
 
-    /* Кастомный скроллбар для селекта */
-    select::-webkit-scrollbar {
-        width: 8px;
-    }
+        .video-works-slider .slick-slide {
+            padding: 0 8px;
+            height: auto;
+        }
 
-    select::-webkit-scrollbar-track {
-        background: #16213e;
-        border-radius: 4px;
-    }
+        /* Десктоп: 3 в ряд, планшет: 2 в ряд, мобильный: 1 в ряд */
+        @media (min-width: 1024px) {
+            .video-works-slider .slick-slide {
+                width: 33.333% !important; /* 3 в ряд */
+            }
+        }
 
-    select::-webkit-scrollbar-thumb {
-        background: #00b7c2;
-        border-radius: 4px;
-    }
-</style>
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .video-works-slider .slick-slide {
+                width: 50% !important; /* 2 в ряд */
+            }
+        }
+
+        @media (max-width: 767px) {
+            .video-works-slider .slick-slide {
+                width: 100% !important; /* 1 в ряд */
+            }
+        }
+
+        /* Вертикальное соотношение сторон 9:16 для видео 1080x1920 */
+        .aspect-w-9 {
+            position: relative;
+        }
+
+        .aspect-w-9::before {
+            content: '';
+            display: block;
+            padding-bottom: 177.78%; /* 16:9 перевернуто = 9:16 = 56.25% -> 177.78% */
+        }
+
+        .aspect-w-9 > * {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Чтобы видео заполняло контейнер */
+        }
+
+        /* Для вертикальных видео убираем стандартные контролы и делаем кастомные */
+        .portfolio-video {
+            background: #000;
+        }
+
+        /* Улучшенные контролы для вертикального видео */
+        .portfolio-video::-webkit-media-controls-panel {
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+        }
+
+        /* Ограничение текста в 3 строки */
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Уменьшаем отступы в карточках для вертикального видео */
+        .video-works-slider .bg-white\\/5 {
+            padding: 1rem;
+        }
+
+        /* Стрелки слайдера */
+        .video-works-slider .slick-prev,
+        .video-works-slider .slick-next {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 183, 194, 0.9) !important;
+            border-radius: 50%;
+            z-index: 10;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-works-slider .slick-prev {
+            left: -50px;
+        }
+
+        .video-works-slider .slick-next {
+            right: -50px;
+        }
+
+        .video-works-slider .slick-prev:before,
+        .video-works-slider .slick-next:before {
+            content: '' !important;
+        }
+
+        .video-works-slider .slick-prev:after {
+            content: '‹';
+            font-size: 20px;
+            color: #0a0a1a;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .video-works-slider .slick-next:after {
+            content: '›';
+            font-size: 20px;
+            color: #0a0a1a;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        /* Точки навигации */
+        .video-works-slider .slick-dots {
+            bottom: -40px;
+        }
+
+        .video-works-slider .slick-dots li button:before {
+            font-size: 8px;
+            color: #00b7c2;
+            opacity: 0.3;
+        }
+
+        .video-works-slider .slick-dots li.slick-active button:before {
+            opacity: 1;
+            color: #00b7c2;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 1280px) {
+            .video-works-slider .slick-prev {
+                left: -30px;
+            }
+            .video-works-slider .slick-next {
+                right: -30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .video-works-slider .slick-prev,
+            .video-works-slider .slick-next {
+                display: none !important;
+            }
+
+            .video-works-slider .slick-list {
+                margin: 0 -4px;
+            }
+
+            .video-works-slider .slick-slide {
+                padding: 0 4px;
+            }
+        }
+
+        /* Единая высота для карточек */
+        .video-works-slider .slick-track {
+            display: flex !important;
+        }
+
+        .video-works-slider .slick-slide {
+            height: inherit !important;
+        }
+
+        .video-works-slider .slick-slide > div {
+            height: 100%;
+        }
+
+        /* Улучшенный внешний вид карточек для вертикального контента */
+        .video-works-slider .bg-white\\/5 {
+            transition: all 0.3s ease;
+        }
+
+        .video-works-slider .bg-white\\/5:hover {
+                                             transform: translateY(-2px);
+                                             box-shadow: 0 8px 25px rgba(0, 183, 194, 0.15);
+                                         }
+
+        select option {
+            background: #1a1a2e !important;
+            color: #f1f1f1 !important;
+            padding: 12px;
+        }
+
+        select:focus option {
+            background: #16213e !important;
+        }
+
+        /* Кастомный скроллбар для селекта */
+        select::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        select::-webkit-scrollbar-track {
+            background: #16213e;
+            border-radius: 4px;
+        }
+
+        select::-webkit-scrollbar-thumb {
+            background: #00b7c2;
+            border-radius: 4px;
+        }
+    </style>
+
     <script>
-        // Функции для успешного попапа
+        // Инициализация слайдера видео работ с 3 элементами на десктопе
+        document.addEventListener('DOMContentLoaded', function() {
+            $('.video-works-slider').slick({
+                dots: true,
+                arrows: true,
+                infinite: true,
+                speed: 500,
+                slidesToShow: 3, // 3 на десктопе по умолчанию
+                slidesToScroll: 1,
+                autoplay: true,
+                autoplaySpeed: 6000,
+                pauseOnHover: true,
+                adaptiveHeight: false,
+                responsive: [
+                    {
+                        breakpoint: 1024, // Десктоп
+                        settings: {
+                            slidesToShow: 3,
+                            slidesToScroll: 1
+                        }
+                    },
+                    {
+                        breakpoint: 768, // Планшет
+                        settings: {
+                            slidesToShow: 2,
+                            slidesToScroll: 1,
+                            arrows: false
+                        }
+                    },
+                    {
+                        breakpoint: 640, // Мобильный
+                        settings: {
+                            slidesToShow: 1,
+                            slidesToScroll: 1,
+                            arrows: false
+                        }
+                    }
+                ]
+            });
+
+            // Управление видео: остановка других при воспроизведении одного
+            initializeVideoControls();
+        });
+
+        // Функция для управления видео
+        function initializeVideoControls() {
+            debug_log("Initializing video controls for vertical portfolio videos");
+
+            // Получаем все видео элементы
+            const videos = document.querySelectorAll('.portfolio-video');
+            const iframes = document.querySelectorAll('.video-iframe');
+
+            debug_log(`Found ${videos.length} HTML5 videos and ${iframes.length} iframe videos`);
+
+            // Обработка HTML5 видео
+            videos.forEach(video => {
+                video.addEventListener('play', function() {
+                    debug_log(`Vertical video ${this.dataset.videoId} started playing`);
+
+                    // Останавливаем все другие HTML5 видео
+                    videos.forEach(otherVideo => {
+                        if (otherVideo !== this && !otherVideo.paused) {
+                            debug_log(`Pausing other vertical video ${otherVideo.dataset.videoId}`);
+                            otherVideo.pause();
+                        }
+                    });
+
+                    // Пауза для iframe видео (YouTube/Vimeo)
+                    pauseAllIframes();
+                });
+            });
+
+            // Обработка iframe видео (YouTube/Vimeo)
+            iframes.forEach(iframe => {
+                iframe.addEventListener('mouseenter', function() {
+                    debug_log(`Vertical iframe ${this.dataset.videoId} focused`);
+                    // При фокусе на iframe, пауза для HTML5 видео
+                    pauseAllHTML5Videos();
+                });
+            });
+
+            // Также останавливаем видео при смене слайда
+            $('.video-works-slider').on('beforeChange', function(event, slick, currentSlide, nextSlide) {
+                debug_log(`Slider changing from slide ${currentSlide} to ${nextSlide}`);
+                pauseAllVideos();
+            });
+        }
+
+        // Функция для паузы всех HTML5 видео
+        function pauseAllHTML5Videos() {
+            const videos = document.querySelectorAll('.portfolio-video');
+            videos.forEach(video => {
+                if (!video.paused) {
+                    debug_log(`Pausing vertical HTML5 video ${video.dataset.videoId} on slide change`);
+                    video.pause();
+                }
+            });
+        }
+
+        // Функция для паузы всех iframe видео
+        function pauseAllIframes() {
+            const iframes = document.querySelectorAll('.video-iframe');
+            iframes.forEach(iframe => {
+                try {
+                    // Пытаемся отправить команду паузы в iframe
+                    iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                } catch (e) {
+                    debug_log(`Could not pause vertical iframe ${iframe.dataset.videoId}: ${e.message}`);
+                }
+            });
+        }
+
+        // Функция для паузы всех видео
+        function pauseAllVideos() {
+            pauseAllHTML5Videos();
+            pauseAllIframes();
+        }
+
+        // Функции для попапов (существующий код)
         function showSuccessPopup() {
             const popup = document.getElementById('successPopup');
             popup.classList.remove('hidden');
@@ -355,7 +682,6 @@
             popup.classList.add('hidden');
         }
 
-        // Функции для попапа с ошибкой
         function showErrorPopup() {
             const popup = document.getElementById('errorPopup');
             popup.classList.remove('hidden');
@@ -427,6 +753,7 @@
             }
         });
     </script>
+
 
 <?php
 $content = ob_get_clean();

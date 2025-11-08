@@ -4,11 +4,22 @@ class WorkProcess extends Model {
     protected $table = 'work_processes';
 
     public function getAllActive() {
-        return $this->db->fetchAll("
+        $cacheKey = "all_active_work_processes";
+
+        if ($cached = $this->cache->get($cacheKey)) {
+            debug_log("WorkProcess: Cache HIT for all_active_work_processes");
+            return $cached;
+        }
+
+        debug_log("WorkProcess: Cache MISS for all_active_work_processes");
+        $result = $this->db->fetchAll("
             SELECT * FROM {$this->table} 
             WHERE is_active = 1 
             ORDER BY step_order
         ");
+
+        $this->cache->set($cacheKey, $result, 10800); // 3 часа
+        return $result;
     }
 
     public function getAll() {

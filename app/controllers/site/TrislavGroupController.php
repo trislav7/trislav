@@ -1,22 +1,44 @@
 <?php
 class TrislavGroupController extends Controller {
     public function index() {
+        // Инициализируем кэш напрямую
+        $cache = new Cache();
+
+        $cacheKey = "page_trislav_group_" . md5($_SERVER['REQUEST_URI']);
+
+        // Проверяем кэш страницы
+        if ($cached = $cache->get($cacheKey)) {
+            debug_log("TrislavGroupController: Cache HIT for page Trislav Group");
+            echo $cached;
+            return;
+        }
+
+        debug_log("TrislavGroupController: Cache MISS for page Trislav Group");
+
+        // Начинаем буферизацию для кэширования
+        ob_start();
+
         $projectModel = new TrislavGroupProject();
         $clientModel = new TrislavGroupClient();
         $reviewModel = new TrislavGroupReview();
-        $advantageModel = new LedAdvantage(); // Используем общую модель преимуществ
+        $advantageModel = new LedAdvantage();
         $settingModel = new SiteSetting();
 
         $data = [
             'projects' => $projectModel->getAllActive(),
             'clients' => $clientModel->getAllActive(),
             'reviews' => $reviewModel->getAllActive(),
-            'advantages' => $advantageModel->getActiveByCategory('trislav_group'), // Только преимущества Трислав Групп
+            'advantages' => $advantageModel->getActiveByCategory('trislav_group'),
             'settings' => $settingModel->getAllSettings(),
             'title' => 'Трислав Групп | Развитие бизнеса через креативные решения'
         ];
 
         $this->view('site/trislav_group', $data);
+
+        // Сохраняем в кэш
+        $content = ob_get_contents();
+        $cache->set($cacheKey, $content, 3600);
+        ob_end_flush();
     }
 
     public function privacyPolicy() {

@@ -77,6 +77,55 @@
                     </div>
                 </div>
 
+                <!-- СЕКЦИЯ ДЛЯ ВИДЕО -->
+                <div class="border-t border-highlight/30 pt-6">
+                    <h3 class="text-xl font-bold text-highlight mb-4">Видео материал</h3>
+
+                    <!-- Поле для видео URL -->
+                    <div class="mb-6">
+                        <label class="block text-light font-semibold mb-3">Ссылка на видео (YouTube/Vimeo)</label>
+                        <input type="url" name="video_url" value="<?= $portfolio['video_url'] ?? '' ?>"
+                               class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight placeholder-gray-500"
+                               placeholder="https://youtube.com/watch?v=...">
+                        <p class="text-gray-400 text-sm mt-1">
+                            ИЛИ загрузите видео файл ниже. Приоритет у файла.
+                        </p>
+                    </div>
+
+                    <!-- Загрузка видео файла -->
+                    <div class="mb-6">
+                        <label class="block text-light font-semibold mb-3">Видео файл</label>
+                        <input type="file" name="video_file" accept="video/*"
+                               class="w-full px-4 py-3 bg-primary border border-highlight/30 rounded-lg text-light transition-colors duration-300 focus:outline-none focus:border-highlight">
+                        <p class="text-gray-400 text-sm mt-1">
+                            Макс. размер: 500MB. Поддерживаемые форматы: MP4, AVI, MOV, MKV
+                            <br><span class="text-highlight">Видео сохраняется локально на сервере</span>
+                        </p>
+                    </div>
+
+                    <!-- Информация о текущем видео -->
+                    <?php if (!empty($portfolio['video_url']) || !empty($portfolio['video_filename'])): ?>
+                        <div class="bg-primary/50 rounded-lg p-4 mb-4">
+                            <h4 class="font-semibold text-highlight mb-2">Текущее видео:</h4>
+                            <?php if (!empty($portfolio['video_url'])): ?>
+                                <p class="text-light">URL: <?= htmlspecialchars($portfolio['video_url']) ?></p>
+                            <?php endif; ?>
+                            <?php if (!empty($portfolio['video_filename'])): ?>
+                                <p class="text-light">Файл: <?= htmlspecialchars($portfolio['video_filename']) ?></p>
+                                <p class="text-gray-400 text-sm">
+                                    <i class="fas fa-server mr-1"></i>Хранится локально на сервере
+                                </p>
+                            <?php endif; ?>
+
+                            <label class="flex items-center mt-3">
+                                <input type="checkbox" name="remove_video" value="on"
+                                       class="mr-3 w-4 h-4 text-red-500 bg-primary border-red-500/30 rounded focus:ring-red-500 focus:ring-2">
+                                <span class="text-red-400">Удалить текущее видео</span>
+                            </label>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
                 <div>
                     <label class="block text-light font-semibold mb-3">Теги (через запятую) *</label>
                     <input type="text" name="tags" value="<?= isset($portfolio['tags']) ? implode(", ", json_decode($portfolio['tags'], true)) : '' ?>" required

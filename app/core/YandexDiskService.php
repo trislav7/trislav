@@ -260,5 +260,167 @@ class YandexDiskService {
 
         return $httpCode === 204 || $httpCode === 202; // 204 - удалено, 202 - принято в обработку
     }
+
+    public function getPublicUrl($remotePath) {
+        debug_log("Getting direct video URL for: " . $remotePath);
+
+        try {
+            // Сначала получаем ссылку для скачивания
+            $downloadUrl = $this->baseUrl . '/download?path=' . urlencode($remotePath);
+
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $downloadUrl,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: OAuth ' . $this->token,
+                    'Accept: application/json'
+                ],
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => false
+            ]);
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($httpCode === 200) {
+                $data = json_decode($response, true);
+                if (isset($data['href'])) {
+                    debug_log("Direct download URL obtained: " . $data['href']);
+                    return $data['href'];
+                }
+            }
+
+            debug_log("Failed to get direct URL. HTTP Code: " . $httpCode);
+
+            // Фолбэк: попробуем получить через публикацию
+            return $this->getPublicUrlFallback($remotePath);
+
+        } catch (Exception $e) {
+            debug_log("Error getting direct URL: " . $e->getMessage());
+            return $this->getPublicUrlFallback($remotePath);
+        }
+    }
+
+    /**
+     * Фолбэк метод через публикацию файла
+     */
+    private function getPublicUrlFallback($remotePath) {
+        debug_log("Trying fallback method for: " . $remotePath);
+
+        try {
+            // Публикуем файл
+            $publishUrl = $this->baseUrl . '/publish?path=' . urlencode($remotePath);
+
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $publishUrl,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CUSTOMREQUEST => 'PUT',
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: OAuth ' . $this->token
+                ],
+                CURLOPT_TIMEOUT => 30
+            ]);
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($httpCode === 200 || $httpCode === 202) {
+                debug_log("File published successfully");
+
+                // Получаем информацию о файле
+                $metaUrl = $this->baseUrl . '?path=' . urlencode($remotePath);
+
+                $ch = curl_init();
+                curl_setopt_array($ch, [
+                    CURLOPT_URL => $metaUrl,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_HTTPHEADER => [
+                        'Authorization: OAuth ' . $this->token
+                    ],
+                    CURLOPT_TIMEOUT => 30
+                ]);
+
+                $response = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+
+                if ($httpCode === 200) {
+                    $data = json_decode($response, true);
+                    if (isset($data['public_url'])) {
+                        debug_log("Public page URL obtained: " . $data['public_url']);
+
+                        // Преобразуем URL страницы в прямую ссылку на файл
+                        return $this->convertToDirectLink($data['public_url']);
+                    }
+                }
+            }
+
+            return null;
+
+        } catch (Exception $e) {
+            debug_log("Error in fallback method: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Преобразует URL страницы Яндекс.Диска в прямую ссылку на файл
+     */
+    private function convertToDirectLink($pageUrl) {
+        debug_log("Converting page URL to direct link: " . $pageUrl);
+
+        // Для ссылок вида https://yadi.sk/i/XXX извлекаем ID и формируем прямую ссылку
+        if (preg_match('/yadi\.sk\/i\/([a-zA-Z0-9_-]+)/', $pageUrl, $matches)) {
+            $fileId = $matches[1];
+            $directUrl = "https://yadi.sk/d/{$fileId}";
+            debug_log("Converted to direct download URL: " . $directUrl);
+            return $directUrl;
+        }
+
+        return $pageUrl;
+    }
+
+    public function getTemporaryDirectUrl($remotePath) {
+        debug_log("Getting temporary direct URL for: " . $remotePath);
+
+        try {
+            $url = $this->baseUrl . '/download?path=' . urlencode($remotePath);
+
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: OAuth ' . $this->token,
+                    'Accept: application/json'
+                ],
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => false
+            ]);
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($httpCode === 200) {
+                $data = json_decode($response, true);
+                if (isset($data['href'])) {
+                    debug_log("Temporary direct URL obtained: " . $data['href']);
+                    return $data['href'];
+                }
+            }
+
+            debug_log("Failed to get temporary direct URL. HTTP Code: " . $httpCode);
+            return null;
+
+        } catch (Exception $e) {
+            debug_log("Error getting temporary direct URL: " . $e->getMessage());
+            return null;
+        }
+    }
 }
 ?>

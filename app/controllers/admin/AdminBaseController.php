@@ -1,8 +1,10 @@
 <?php
 class AdminBaseController extends Controller {
-
+    protected $cacheManager;
     public function __construct() {
         parent::__construct();
+
+        $this->cacheManager = new CacheManager();
 
         // Проверяем аутентификацию (кроме страницы логина)
         $currentAction = $_GET['action'] ?? 'dashboard';
@@ -26,6 +28,7 @@ class AdminBaseController extends Controller {
         // Добавляем базовые данные для админки
         $data['current_action'] = $_GET['action'] ?? 'dashboard';
         $data['admin_username'] = $_SESSION['admin_username'] ?? 'Администратор';
+        $data['cache_stats'] = $this->cacheManager->getCacheStats();
 
         // Очищаем буфер если он есть
         if (ob_get_level() > 0) {
@@ -110,6 +113,35 @@ class AdminBaseController extends Controller {
             return $message;
         }
         return null;
+    }
+
+    /**
+     * Ручная очистка кэша из админки
+     */
+    protected function clearCacheManually($type = 'all') {
+        debug_log("AdminBaseController: Manual cache clearance requested for " . $type);
+
+        $cleared = 0;
+        switch ($type) {
+            case 'services':
+                $cleared = $this->cacheManager->clearServicesCache();
+                break;
+            case 'portfolio':
+                $cleared = $this->cacheManager->clearPortfolioCache();
+                break;
+            case 'trislav':
+                $cleared = $this->cacheManager->clearTrislavGroupCache();
+                break;
+            case 'settings':
+                $cleared = $this->cacheManager->clearSettingsCache();
+                break;
+            case 'all':
+                $cleared = $this->cacheManager->clearAllCache();
+                break;
+        }
+
+        $this->setFlashMessage('success', "Кэш очищен ($cleared файлов)");
+        debug_log("AdminBaseController: Manual cache clearance completed for " . $type);
     }
 }
 ?>

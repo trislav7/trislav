@@ -12,18 +12,21 @@ class Cache {
 
     public function get($key) {
         $file = $this->getCacheFile($key);
-        
+
         if (!file_exists($file)) {
+            CacheMonitor::logOperation('get', $key, false);
             return null;
         }
 
         $data = unserialize(file_get_contents($file));
-        
+
         if (time() > $data['expires']) {
             unlink($file);
+            CacheMonitor::logOperation('get', $key, false);
             return null;
         }
 
+        CacheMonitor::logOperation('get', $key, true);
         return $data['value'];
     }
 
@@ -38,12 +41,14 @@ class Cache {
             'expires' => time() + $ttl
         ];
 
+        CacheMonitor::logOperation('set', $key);
         file_put_contents($file, serialize($data), LOCK_EX);
         return true;
     }
 
     public function delete($key) {
         $file = $this->getCacheFile($key);
+        CacheMonitor::logOperation('delete', $key);
         if (file_exists($file)) {
             return unlink($file);
         }

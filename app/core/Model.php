@@ -29,70 +29,11 @@ class Model {
         );
 
         $id = $this->db->lastInsertId();
-
+        
         // Автоматически очищаем кэш после создания
         $this->clearRelevantCache();
-        debug_log("Model: Cache cleared after CREATE operation for {$this->table}");
-
+        
         return $id;
-    }
-
-    /**
-     * Автоматически очищает релевантный кэш в зависимости от модели
-     */
-    /**
-     * Автоматически очищает релевантный кэш в зависимости от модели
-     */
-    protected function clearRelevantCache() {
-        $modelName = get_class($this);
-        debug_log("Model: Auto-clearing relevant cache for " . $modelName);
-
-        switch ($modelName) {
-            case 'Service':
-                $this->cacheManager->clearServicesCache();
-                break;
-
-            case 'Tariff':
-                $this->cacheManager->clearTariffsCache();
-                break;
-
-            case 'Portfolio':
-                $this->cacheManager->clearPortfolioCache();
-                break;
-
-            case 'TrislavGroupProject':
-            case 'TrislavGroupClient':
-            case 'TrislavGroupReview':
-            case 'TrislavGroupAdvantage':
-                $this->cacheManager->clearTrislavGroupCache();
-                break;
-
-            case 'WorkProcess':
-                $this->cacheManager->clearWorkProcessCache();
-                break;
-
-            case 'SiteSetting':
-                $this->cacheManager->clearSettingsCache();
-                break;
-
-            case 'ShoppingCenter':
-                $this->cacheManager->clearShoppingCentersCache();
-                break;
-
-            case 'LedRequirement':
-                $this->cacheManager->clearLedRequirementsCache();
-                break;
-
-            case 'LedAdvantage':
-                $this->cacheManager->clearLedAdvantagesCache();
-                break;
-
-            default:
-                // Для неизвестных моделей очищаем весь кэш
-                debug_log("Model: Unknown model {$modelName}, clearing all cache");
-                $this->cacheManager->clearAllCache();
-                break;
-        }
     }
 
     public function update($id, $data) {
@@ -107,23 +48,22 @@ class Model {
             "UPDATE {$this->table} SET $setClause WHERE id = ?",
             $values
         );
-
+        
         // Автоматически очищаем кэш после обновления
         $this->clearRelevantCache();
-        debug_log("Model: Cache cleared after UPDATE operation for {$this->table}");
-
+        
         return $result;
     }
+
     public function delete($id) {
         $result = $this->db->query(
             "DELETE FROM {$this->table} WHERE id = ?",
             [$id]
         );
-
+        
         // Автоматически очищаем кэш после удаления
         $this->clearRelevantCache();
-        debug_log("Model: Cache cleared after DELETE operation for {$this->table}");
-
+        
         return $result;
     }
 
@@ -136,5 +76,50 @@ class Model {
             "SELECT * FROM {$this->table} WHERE $whereClause ORDER BY id DESC",
             array_values($conditions)
         );
+    }
+    
+    /**
+     * Автоматически очищает релевантный кэш в зависимости от модели
+     */
+    protected function clearRelevantCache() {
+        $modelName = get_class($this);
+        debug_log("Model: Clearing relevant cache for " . $modelName);
+        
+        switch ($modelName) {
+            case 'Service':
+                $this->cacheManager->clearServicesCache();
+                break;
+                
+            case 'Tariff':
+                $this->cacheManager->clearTariffsCache();
+                break;
+                
+            case 'Portfolio':
+                $this->cacheManager->clearPortfolioCache();
+                break;
+                
+            case 'TrislavGroupProject':
+            case 'TrislavGroupClient':
+            case 'TrislavGroupReview':
+                $this->cacheManager->clearTrislavGroupCache();
+                break;
+                
+            case 'WorkProcess':
+                $this->cacheManager->clearWorkProcessCache();
+                break;
+                
+            case 'SiteSetting':
+                $this->cacheManager->clearSettingsCache();
+                break;
+                
+            case 'ShoppingCenter':
+                $this->cacheManager->clearShoppingCentersCache();
+                break;
+                
+            default:
+                // Для неизвестных моделей очищаем весь кэш
+                $this->cacheManager->clearAllCache();
+                break;
+        }
     }
 }

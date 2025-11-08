@@ -77,6 +77,31 @@
             background-color: rgba(0, 183, 194, 0.1);
             transform: translateX(2px);
         }
+
+        /* Стили для статистики кэша */
+        .cache-stats {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid #00b7c2;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-top: 1rem;
+        }
+        .cache-stat-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .cache-stat-label {
+            color: #f1f1f1;
+            font-size: 0.875rem;
+            flex: 1;
+        }
+        .cache-stat-value {
+            color: #00b7c2;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
     </style>
 </head>
 <body class="bg-primary text-light font-montserrat">
@@ -88,12 +113,28 @@
                 <div class="flex space-x-1">
                     <div class="w-1.5 h-1.5 bg-white rounded-full opacity-80"></div>
                     <div class="w-1.5 h-1.5 bg-white rounded-full opacity-80"></div>
-                    <div class="w-1.5 h-1.5 bg-white rounded-full opacity-80"></div>
+                    <div class="w-1.5 h-1.5 bg-white rounded-full opacity=80"></div>
                 </div>
             </div>
             <h1 class="text-xl font-bold">Админ-панель <span class="text-highlight">Трислав</span></h1>
         </div>
         <div class="flex items-center space-x-4">
+            <!-- Статистика кэша -->
+            <?php if (isset($cache_stats) && !empty($cache_stats)): ?>
+                <div class="cache-stats">
+                    <div class="cache-stat-item">
+                        <span class="cache-stat-label">Кэш:</span>
+                        <span class="cache-stat-value">
+                        <?= $cache_stats['active_keys'] ?> активных
+                    </span>
+                    </div>
+                    <div class="cache-stat-item">
+                        <span class="cache-stat-label">Размер:</span>
+                        <span class="cache-stat-value"><?= $cache_stats['total_size'] ?></span>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <span class="text-gray-300 text-sm"><?= $admin_username ?? 'Администратор' ?></span>
             <a href="/admin.php?action=logout" class="bg-highlight text-primary px-4 py-2 rounded-lg hover:bg-transparent hover:text-highlight border-2 border-highlight transition-all duration-300 text-sm font-semibold">
                 <i class="fas fa-sign-out-alt mr-2"></i>Выйти
@@ -214,6 +255,60 @@
                     </a>
                 </div>
             </div>
+
+            <div class="menu-divider"></div>
+
+            <!-- НОВЫЙ РАЗДЕЛ: УПРАВЛЕНИЕ КЭШЕМ -->
+            <div class="menu-section mb-4">
+                <div class="menu-header flex items-center py-3 px-4 text-light bg-primary/40 rounded-lg cursor-pointer transition-all duration-300 hover:bg-primary/60" onclick="toggleSubmenu('cache-management-menu')">
+                    <i class="fas fa-broom w-5 mr-3 text-lg"></i>
+                    <span class="flex-1 font-semibold">Управление кэшем</span>
+                    <i class="fas fa-chevron-down text-xs transition-transform duration-300" id="cache-management-arrow"></i>
+                </div>
+                <div class="submenu mt-2 space-y-1" id="cache-management-menu" style="<?= strpos(($current_action ?? ''), 'actions_clear_cache') === 0 ? 'max-height: 1000px;' : 'max-height: 0;' ?>">
+                    <a href="/admin.php?action=actions_clear_cache&type=services" class="menu-item flex items-center text-sm <?= (($_GET['type'] ?? '') == 'services') ? 'active-submenu' : 'text-gray-300' ?>">
+                        <i class="fas fa-cog w-4 mr-3 text-yellow-400"></i>
+                        Очистить кэш услуг
+                    </a>
+                    <a href="/admin.php?action=actions_clear_cache&type=portfolio" class="menu-item flex items-center text-sm <?= (($_GET['type'] ?? '') == 'portfolio') ? 'active-submenu' : 'text-gray-300' ?>">
+                        <i class="fas fa-images w-4 mr-3 text-blue-400"></i>
+                        Очистить кэш портфолио
+                    </a>
+                    <a href="/admin.php?action=actions_clear_cache&type=trislav" class="menu-item flex items-center text-sm <?= (($_GET['type'] ?? '') == 'trislav') ? 'active-submenu' : 'text-gray-300' ?>">
+                        <i class="fas fa-building w-4 mr-3 text-purple-400"></i>
+                        Очистить кэш Трислав Групп
+                    </a>
+                    <a href="/admin.php?action=actions_clear_cache&type=tariffs" class="menu-item flex items-center text-sm <?= (($_GET['type'] ?? '') == 'tariffs') ? 'active-submenu' : 'text-gray-300' ?>">
+                        <i class="fas fa-tags w-4 mr-3 text-green-400"></i>
+                        Очистить кэш тарифов
+                    </a>
+                    <a href="/admin.php?action=actions_clear_cache&type=settings" class="menu-item flex items-center text-sm <?= (($_GET['type'] ?? '') == 'settings') ? 'active-submenu' : 'text-gray-300' ?>">
+                        <i class="fas fa-sliders-h w-4 mr-3 text-indigo-400"></i>
+                        Очистить кэш настроек
+                    </a>
+                    <a href="/admin.php?action=actions_clear_cache&type=shopping_centers" class="menu-item flex items-center text-sm <?= (($_GET['type'] ?? '') == 'shopping_centers') ? 'active-submenu' : 'text-gray-300' ?>">
+                        <i class="fas fa-store w-4 mr-3 text-orange-400"></i>
+                        Очистить кэш ТЦ
+                    </a>
+                    <a href="/admin.php?action=actions_clear_cache&type=work_process" class="menu-item flex items-center text-sm <?= (($_GET['type'] ?? '') == 'work_process') ? 'active-submenu' : 'text-gray-300' ?>">
+                        <i class="fas fa-cogs w-4 mr-3 text-cyan-400"></i>
+                        Очистить кэш процессов
+                    </a>
+                    <a href="/admin.php?action=actions_clear_cache&type=led_requirements" class="menu-item flex items-center text-sm <?= (($_GET['type'] ?? '') == 'led_requirements') ? 'active-submenu' : 'text-gray-300' ?>">
+                        <i class="fas fa-clipboard-list w-4 mr-3 text-red-400"></i>
+                        Очистить кэш требований
+                    </a>
+                    <div class="menu-divider"></div>
+                    <a href="/admin.php?action=cache_stats" class="menu-item flex items-center text-sm <?= (($current_action ?? '') == 'cache_stats') ? 'active-submenu' : 'text-gray-300' ?>">
+                        <i class="fas fa-chart-bar w-4 mr-3 text-teal-400"></i>
+                        Статистика кэша
+                    </a>
+                    <a href="/admin.php?action=actions_clear_cache&type=all" class="menu-item flex items-center text-sm <?= (($_GET['type'] ?? '') == 'all') ? 'active-submenu' : 'text-red-400' ?>">
+                        <i class="fas fa-broom w-4 mr-3"></i>
+                        Очистить весь кэш
+                    </a>
+                </div>
+            </div>
         </nav>
     </aside>
 
@@ -251,6 +346,7 @@
         const currentAction = '<?= $current_action ?? "" ?>';
         const urlParams = new URLSearchParams(window.location.search);
         const category = urlParams.get('category');
+        const cacheType = urlParams.get('type');
 
         // Авто-открытие разделов где есть активный пункт
         if (['dashboard', 'settings', 'video_schedule', 'ai_assistant'].includes(currentAction)) {
@@ -264,6 +360,9 @@
             currentAction.startsWith('led_requirements') ||
             currentAction.startsWith('trislav_shopping_centers')) {
             toggleSubmenu('trislav-media-menu');
+        }
+        if (currentAction === 'actions_clear_cache' && cacheType) {
+            toggleSubmenu('cache-management-menu');
         }
     });
 </script>

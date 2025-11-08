@@ -9,6 +9,7 @@ config/database.php  # если есть чувствительные данны
 /temp/
 /videos/
 
+
 # Логи
 *.log
 

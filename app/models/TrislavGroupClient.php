@@ -3,11 +3,22 @@ class TrislavGroupClient extends Model {
     protected $table = 'trislav_group_clients';
 
     public function getAllActive() {
-        return $this->db->fetchAll("
+        $cacheKey = "all_active_trislav_clients";
+
+        if ($cached = $this->cache->get($cacheKey)) {
+            debug_log("TrislavGroupClient: Cache HIT for all_active_trislav_clients");
+            return $cached;
+        }
+
+        debug_log("TrislavGroupClient: Cache MISS for all_active_trislav_clients");
+        $result = $this->db->fetchAll("
             SELECT * FROM {$this->table} 
             WHERE is_active = 1 
             ORDER BY COALESCE(order_index, 0), id
         ");
+
+        $this->cache->set($cacheKey, $result, 7200); // 2 часа
+        return $result;
     }
 
     public function getAll() {

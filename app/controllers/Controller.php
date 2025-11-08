@@ -1,6 +1,9 @@
 <?php
 class Controller {
 
+    protected $cache;
+    protected $cacheManager;
+
     public function __construct() {
         // Убедимся что конструктор существует и не вызывает ошибок
     }

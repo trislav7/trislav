@@ -1,6 +1,22 @@
 <?php
 class BtlController extends Controller {
     public function index() {
+        // Инициализируем кэш напрямую
+        $cache = new Cache();
+
+        $cacheKey = "page_btl_" . md5($_SERVER['REQUEST_URI']);
+
+        // Проверяем кэш страницы
+        if ($cached = $cache->get($cacheKey)) {
+            debug_log("BtlController: Cache HIT for page BTL");
+            echo $cached;
+            return;
+        }
+
+        debug_log("BtlController: Cache MISS for page BTL");
+
+        // Начинаем буферизацию для кэширования
+        ob_start();
 
         $serviceModel = new Service();
         $portfolioModel = new Portfolio();
@@ -8,9 +24,7 @@ class BtlController extends Controller {
 
         try {
             $services = $serviceModel->getActiveByCategory('btl');
-
             $sliderPortfolio = $portfolioModel->getForSlider('btl', 4);
-
             $portfolio = $portfolioModel->getByCategory('btl');
 
             $data = [
@@ -26,6 +40,11 @@ class BtlController extends Controller {
         } catch (Exception $e) {
             throw $e;
         }
+
+        // Сохраняем в кэш
+        $content = ob_get_contents();
+        $cache->set($cacheKey, $content, 3600);
+        ob_end_flush();
     }
 
     public function submitForm() {

@@ -23,4 +23,37 @@ function debug_log($message) {
     $logMessage = "[$timestamp] $message\n";
     file_put_contents($logFile, $logMessage, FILE_APPEND | LOCK_EX);
 }
+
+function getPortfolioVideoUrl($portfolioItem) {
+    debug_log("Getting video URL for portfolio item ID: " . ($portfolioItem['id'] ?? 'unknown'));
+
+    // Приоритет 1: Прокси для Яндекс.Диска
+    if (!empty($portfolioItem['yandex_disk_path']) && !empty($portfolioItem['id'])) {
+        $proxyUrl = "/video/stream?id=" . $portfolioItem['id'];
+        debug_log("Using proxy URL: " . $proxyUrl);
+        return $proxyUrl;
+    }
+
+    // Приоритет 2: Локальный файл (если существует)
+    if (!empty($portfolioItem['video_filename'])) {
+        $localPath = '/uploads/videos/' . $portfolioItem['video_filename'];
+        $fullLocalPath = ROOT_PATH . $localPath;
+
+        if (file_exists($fullLocalPath)) {
+            debug_log("Using existing local video file: " . $localPath);
+            return $localPath;
+        } else {
+            debug_log("Local file not found: " . $fullLocalPath);
+        }
+    }
+
+    // Приоритет 3: Внешняя ссылка
+    if (!empty($portfolioItem['video_url'])) {
+        debug_log("Using external video URL: " . $portfolioItem['video_url']);
+        return $portfolioItem['video_url'];
+    }
+
+    debug_log("No video source found for portfolio item ID: " . ($portfolioItem['id'] ?? 'unknown'));
+    return null;
+}
 ?>

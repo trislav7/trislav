@@ -1,6 +1,23 @@
 <?php
 class LedController extends Controller {
     public function index() {
+        // Инициализируем кэш напрямую
+        $cache = new Cache();
+
+        $cacheKey = "page_led_" . md5($_SERVER['REQUEST_URI']);
+
+        // Проверяем кэш страницы
+        if ($cached = $cache->get($cacheKey)) {
+            debug_log("LedController: Cache HIT for page LED");
+            echo $cached;
+            return;
+        }
+
+        debug_log("LedController: Cache MISS for page LED");
+
+        // Начинаем буферизацию для кэширования
+        ob_start();
+
         $serviceModel = new Service();
         $tariffModel = new Tariff();
         $portfolioModel = new Portfolio();
@@ -38,6 +55,11 @@ class LedController extends Controller {
             'settings' => $settings,
             'title' => 'LED Экраны в Торговых Центрах | Трислав Медиа'
         ]);
+
+        // Сохраняем в кэш
+        $content = ob_get_contents();
+        $cache->set($cacheKey, $content, 3600); // 1 час
+        ob_end_flush();
     }
 
     public function submitForm() {
