@@ -8,12 +8,12 @@ class HomeController extends Controller {
 
         // Проверяем кэш страницы
         if ($cached = $cache->get($cacheKey)) {
-            debug_log("HomeController: Cache HIT for page Home");
+            
             echo $cached;
             return;
         }
 
-        debug_log("HomeController: Cache MISS for page Home");
+        
 
         // Начинаем буферизацию для кэширования
         ob_start();
@@ -51,12 +51,12 @@ class HomeController extends Controller {
 
         // Проверяем кэш страницы
         if ($cached = $cache->get($cacheKey)) {
-            debug_log("HomeController: Cache HIT for page Privacy Policy");
+            
             echo $cached;
             return;
         }
 
-        debug_log("HomeController: Cache MISS for page Privacy Policy");
+        
 
         // Начинаем буферизацию для кэширования
         ob_start();

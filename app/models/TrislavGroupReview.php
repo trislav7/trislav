@@ -6,11 +6,11 @@ class TrislavGroupReview extends Model {
         $cacheKey = "all_active_trislav_reviews";
 
         if ($cached = $this->cache->get($cacheKey)) {
-            debug_log("TrislavGroupReview: Cache HIT for all_active_trislav_reviews");
+            
             return $cached;
         }
 
-        debug_log("TrislavGroupReview: Cache MISS for all_active_trislav_reviews");
+        
         $result = $this->db->fetchAll("
             SELECT * FROM {$this->table} 
             WHERE is_active = 1 

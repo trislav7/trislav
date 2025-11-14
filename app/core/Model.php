@@ -83,7 +83,7 @@ class Model {
      */
     protected function clearRelevantCache() {
         $modelName = get_class($this);
-        debug_log("Model: Clearing relevant cache for " . $modelName);
+        
         
         switch ($modelName) {
             case 'Service':

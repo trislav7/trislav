@@ -85,7 +85,6 @@ class AdminPortfolioController extends AdminBaseController {
 
                 // ОБРАБОТКА ЗАГРУЗКИ ВИДЕО ФАЙЛА - ТОЛЬКО ЛОКАЛЬНО
                 if (isset($_FILES['video_file']) && $_FILES['video_file']['error'] === UPLOAD_ERR_OK) {
-                    debug_log("Starting local video upload for portfolio ID: " . $portfolioId);
                     $videoResult = $this->saveVideoLocally($_FILES['video_file'], $portfolioId);
 
                     if ($videoResult) {
@@ -94,7 +93,6 @@ class AdminPortfolioController extends AdminBaseController {
                             'yandex_disk_path' => null, // Всегда null для портфолио
                             'video_url' => null // Очищаем URL если загружаем файл
                         ]);
-                        debug_log("Video saved locally for portfolio: " . $videoResult['filename']);
                     }
                 }
 
@@ -114,7 +112,6 @@ class AdminPortfolioController extends AdminBaseController {
      * Сохранение видео локально - ЕДИНСТВЕННЫЙ МЕТОД ДЛЯ ПОРТФОЛИО
      */
     private function saveVideoLocally($file, $portfolioId) {
-        debug_log("Saving video locally for portfolio ID: " . $portfolioId);
 
         if ($file['error'] === UPLOAD_ERR_OK) {
             $uploadDir = ROOT_PATH . '/uploads/videos/';
@@ -127,16 +124,13 @@ class AdminPortfolioController extends AdminBaseController {
             $filePath = $uploadDir . $filename;
 
             if (move_uploaded_file($file['tmp_name'], $filePath)) {
-                debug_log("Video saved locally: " . $filePath);
                 return [
                     'filename' => $filename,
                     'disk_path' => null // Всегда null для портфолио
                 ];
             } else {
-                debug_log("Failed to move uploaded file: " . $file['tmp_name'] . " to " . $filePath);
             }
         } else {
-            debug_log("Video file upload error: " . $file['error']);
         }
 
         return null;
@@ -168,7 +162,6 @@ class AdminPortfolioController extends AdminBaseController {
             // ОБРАБОТКА УДАЛЕНИЯ ВИДЕО
             $removeVideo = isset($_POST['remove_video']) && $_POST['remove_video'] === 'on';
             if ($removeVideo) {
-                debug_log("Removing video for portfolio ID: " . $id);
                 $this->deletePortfolioVideo($portfolio);
                 $data['video_filename'] = null;
                 $data['yandex_disk_path'] = null;
@@ -177,7 +170,6 @@ class AdminPortfolioController extends AdminBaseController {
 
             // ОБРАБОТКА ЗАГРУЗКИ НОВОГО ВИДЕО - ТОЛЬКО ЛОКАЛЬНО
             if (isset($_FILES['video_file']) && $_FILES['video_file']['error'] === UPLOAD_ERR_OK) {
-                debug_log("Uploading new video for portfolio ID: " . $id);
                 // Удаляем старое видео если есть
                 $this->deletePortfolioVideo($portfolio);
 
@@ -186,7 +178,6 @@ class AdminPortfolioController extends AdminBaseController {
                     $data['video_filename'] = $videoResult['filename'];
                     $data['yandex_disk_path'] = null; // Всегда null для портфолио
                     $data['video_url'] = null; // Очищаем URL если загружаем файл
-                    debug_log("New video saved locally: " . $videoResult['filename']);
                 }
             }
 
@@ -223,19 +214,15 @@ class AdminPortfolioController extends AdminBaseController {
     }
 
     private function deletePortfolioVideo($portfolio) {
-        debug_log("Deleting portfolio video for portfolio ID: " . ($portfolio['id'] ?? 'unknown'));
 
         // УДАЛЯЕМ ТОЛЬКО ЛОКАЛЬНЫЙ ФАЙЛ
         if (!empty($portfolio['video_filename'])) {
             $localPath = ROOT_PATH . '/uploads/videos/' . $portfolio['video_filename'];
             if (file_exists($localPath)) {
                 if (unlink($localPath)) {
-                    debug_log("Successfully deleted local portfolio video: " . $localPath);
                 } else {
-                    debug_log("Failed to delete local portfolio video: " . $localPath);
                 }
             } else {
-                debug_log("Local video file not found: " . $localPath);
             }
         }
 
@@ -244,7 +231,6 @@ class AdminPortfolioController extends AdminBaseController {
             $tempPath = ROOT_PATH . '/uploads/videos/temp/' . $portfolio['video_filename'];
             if (file_exists($tempPath)) {
                 if (unlink($tempPath)) {
-                    debug_log("Successfully deleted temp portfolio video: " . $tempPath);
                 }
             }
         }

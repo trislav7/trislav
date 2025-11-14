@@ -1,6 +1,5 @@
 <?php
 class VideoController extends Controller {
-class VideoController extends Controller {
     public function index() {
         // Инициализируем кэш напрямую
         $cache = new Cache();
@@ -9,12 +8,12 @@ class VideoController extends Controller {
 
         // Проверяем кэш страницы
         if ($cached = $cache->get($cacheKey)) {
-            debug_log("VideoController: Cache HIT for page Video");
+            
             echo $cached;
             return;
         }
 
-        debug_log("VideoController: Cache MISS for page Video");
+        
 
         // Начинаем буферизацию для кэширования
         ob_start();
@@ -26,17 +25,17 @@ class VideoController extends Controller {
         $portfolio = $portfolioModel->getByCategory('video');
 
         // Детальное логирование для отладки
-        debug_log("VideoController: Found " . count($portfolio) . " portfolio items");
+        
 
         foreach ($portfolio as $index => $item) {
-            debug_log("Portfolio item {$index}: ID={$item['id']}, Title={$item['title']}");
-            debug_log("  - yandex_disk_path: " . ($item['yandex_disk_path'] ?? 'NULL'));
-            debug_log("  - video_filename: " . ($item['video_filename'] ?? 'NULL'));
-            debug_log("  - video_url: " . ($item['video_url'] ?? 'NULL'));
+            
+            
+            
+            
 
             // Получаем финальный URL для отладки
             $finalUrl = getPortfolioVideoUrl($item);
-            debug_log("  - final_video_url: " . ($finalUrl ?? 'NULL'));
+            
         }
 
         $this->view('site/video', [
@@ -54,23 +53,46 @@ class VideoController extends Controller {
 
     public function submitForm() {
         if ($_POST) {
-            $leadModel = new Lead();
-            $leadModel->create([
-                'name' => $_POST['name'],
-                'phone' => $_POST['phone'],
-                'email' => $_POST['email'],
-                'company' => $_POST['company'] ?? '',
-                'service_type' => $_POST['service'] ?? 'video',
-                'budget' => $_POST['budget'] ?? '',
-                'message' => $_POST['message'] ?? '',
-                'created_at' => date('Y-m-d H:i:s')
-            ]);
+            try {
+                // ВАЛИДАЦИЯ reCAPTCHA
+                $recaptchaValidator = new RecaptchaValidator();
+                $recaptchaToken = $_POST['recaptcha_token'] ?? '';
 
-            header('Location: /video?success=1');
-            exit;
+                if (!$recaptchaValidator->validate($recaptchaToken)) {
+                    
+                    header('HTTP/1.1 400 Bad Request');
+                    echo json_encode(['success' => false, 'message' => 'Проверка безопасности не пройдена']);
+                    exit;
+                }
+
+                $leadModel = new Lead();
+                $leadId = $leadModel->create([
+                    'name' => $_POST['name'],
+                    'phone' => $_POST['phone'],
+                    'email' => $_POST['email'],
+                    'company' => $_POST['company'] ?? '',
+                    'service_type' => $_POST['service'] ?? 'video',
+                    'budget' => $_POST['budget'] ?? '',
+                    'message' => $_POST['message'] ?? '',
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+
+                
+
+                header('HTTP/1.1 200 OK');
+                echo json_encode(['success' => true, 'message' => 'Заявка успешно отправлена']);
+                exit;
+
+            } catch (Exception $e) {
+                
+                header('HTTP/1.1 500 Internal Server Error');
+                echo json_encode(['success' => false, 'message' => 'Ошибка при отправке заявки']);
+                exit;
+            }
         }
 
-        header('Location: /video');
+        header('HTTP/1.1 400 Bad Request');
+        echo json_encode(['success' => false, 'message' => 'Неверные данные']);
         exit;
     }
 }

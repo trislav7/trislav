@@ -8,12 +8,12 @@ class LedController extends Controller {
 
         // Проверяем кэш страницы
         if ($cached = $cache->get($cacheKey)) {
-            debug_log("LedController: Cache HIT for page LED");
+            
             echo $cached;
             return;
         }
 
-        debug_log("LedController: Cache MISS for page LED");
+        
 
         // Начинаем буферизацию для кэширования
         ob_start();
@@ -64,24 +64,47 @@ class LedController extends Controller {
 
     public function submitForm() {
         if ($_POST) {
-            $leadModel = new Lead();
-            $leadModel->create([
-                'name' => $_POST['name'],
-                'phone' => $_POST['phone'],
-                'email' => $_POST['email'],
-                'company' => $_POST['company'] ?? '',
-                'service_type' => 'led',
-                'budget' => $_POST['budget'] ?? '',
-                'message' => $_POST['message'] ?? '',
-                'created_at' => date('Y-m-d H:i:s'),
-                'tariff_id' => $_POST['tariff_id'] ?? null,
-            ]);
+            try {
+                // Валидация reCAPTCHA
+                $recaptchaValidator = new RecaptchaValidator();
+                $recaptchaToken = $_POST['recaptcha_token'] ?? '';
 
-            header('Location: /led?success=1');
-            exit;
+                if (!$recaptchaValidator->validate($recaptchaToken)) {
+                    
+                    header('HTTP/1.1 400 Bad Request');
+                    echo json_encode(['success' => false, 'message' => 'Проверка безопасности не пройдена']);
+                    exit;
+                }
+
+                $leadModel = new Lead();
+                $leadId = $leadModel->create([
+                    'name' => $_POST['name'],
+                    'phone' => $_POST['phone'],
+                    'email' => $_POST['email'],
+                    'company' => $_POST['company'] ?? '',
+                    'service_type' => 'led',
+                    'budget' => $_POST['budget'] ?? '',
+                    'message' => $_POST['message'] ?? '',
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'tariff_id' => $_POST['tariff_id'] ?? null,
+                ]);
+
+                
+
+                header('HTTP/1.1 200 OK');
+                echo json_encode(['success' => true, 'message' => 'Заявка успешно отправлена']);
+                exit;
+
+            } catch (Exception $e) {
+                
+                header('HTTP/1.1 500 Internal Server Error');
+                echo json_encode(['success' => false, 'message' => 'Ошибка при отправке заявки']);
+                exit;
+            }
         }
 
-        header('Location: /led');
+        header('HTTP/1.1 400 Bad Request');
+        echo json_encode(['success' => false, 'message' => 'Неверные данные']);
         exit;
     }
 }

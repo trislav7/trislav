@@ -8,12 +8,12 @@ class BtlController extends Controller {
 
         // Проверяем кэш страницы
         if ($cached = $cache->get($cacheKey)) {
-            debug_log("BtlController: Cache HIT for page BTL");
+            
             echo $cached;
             return;
         }
 
-        debug_log("BtlController: Cache MISS for page BTL");
+        
 
         // Начинаем буферизацию для кэширования
         ob_start();
@@ -49,23 +49,46 @@ class BtlController extends Controller {
 
     public function submitForm() {
         if ($_POST) {
-            $leadModel = new Lead();
-            $leadModel->create([
-                'name' => $_POST['name'],
-                'phone' => $_POST['phone'],
-                'email' => $_POST['email'],
-                'company' => $_POST['company'] ?? '',
-                'service_type' => 'btl',
-                'budget' => $_POST['budget'] ?? '',
-                'message' => $_POST['message'] ?? '',
-                'created_at' => date('Y-m-d H:i:s')
-            ]);
+            try {
+                // ВАЛИДАЦИЯ reCAPTCHA
+                $recaptchaValidator = new RecaptchaValidator();
+                $recaptchaToken = $_POST['recaptcha_token'] ?? '';
 
-            header('Location: /btl?success=1');
-            exit;
+                if (!$recaptchaValidator->validate($recaptchaToken)) {
+                    
+                    header('HTTP/1.1 400 Bad Request');
+                    echo json_encode(['success' => false, 'message' => 'Проверка безопасности не пройдена']);
+                    exit;
+                }
+
+                $leadModel = new Lead();
+                $leadId = $leadModel->create([
+                    'name' => $_POST['name'],
+                    'phone' => $_POST['phone'],
+                    'email' => $_POST['email'],
+                    'company' => $_POST['company'] ?? '',
+                    'service_type' => 'btl',
+                    'budget' => $_POST['budget'] ?? '',
+                    'message' => $_POST['message'] ?? '',
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+
+                
+
+                header('HTTP/1.1 200 OK');
+                echo json_encode(['success' => true, 'message' => 'Заявка успешно отправлена']);
+                exit;
+
+            } catch (Exception $e) {
+                
+                header('HTTP/1.1 500 Internal Server Error');
+                echo json_encode(['success' => false, 'message' => 'Ошибка при отправке заявки']);
+                exit;
+            }
         }
 
-        header('Location: /btl');
+        header('HTTP/1.1 400 Bad Request');
+        echo json_encode(['success' => false, 'message' => 'Неверные данные']);
         exit;
     }
 }

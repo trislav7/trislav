@@ -13,6 +13,10 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
     <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
 
+    <link rel="canonical" href="<?= (IS_TRISLAV_MEDIA ? 'https://медиа.трислав.рф' : 'https://трислав.рф') . $_SERVER['REQUEST_URI'] ?>" />
+    <meta name="robots" content="index, follow" />
+    <meta name="description" content="<?= $description ?? 'Трислав Медиа - профессиональные рекламные решения для вашего бизнеса' ?>" />
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -184,7 +188,43 @@
                 transform: translateY(0);
             }
         }
+
+        /* Добавьте эти стили в существующий блок <style> */
+        .input-error {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+
+        .checkbox-error {
+            outline: 2px solid #ef4444;
+            border-radius: 2px;
+        }
+        .grecaptcha-badge {
+            visibility: hidden !important;
+            opacity: 0 !important;
+            display: none !important;
+        }
+
+        /* Альтернативный способ - сдвинуть за пределы экрана */
+        .grecaptcha-badge {
+            position: absolute !important;
+            left: -9999px !important;
+            top: -9999px !important;
+        }
     </style>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=105240181', 'ym');
+
+        ym(105240181, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/105240181" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
 </head>
 <body class="bg-primary text-light font-montserrat">
 <!-- Включаем шапку в зависимости от типа сайта -->
@@ -207,6 +247,8 @@
 <?php else: ?>
     <?php include __DIR__ . '/../components/footer_trislav_group.php'; ?>
 <?php endif; ?>
+
+<script src="/app/views/components/form_validation.js"></script>
 
 <!-- Общие скрипты -->
 <script>
@@ -291,5 +333,83 @@
     });
 </script>
 <?php include __DIR__ . '/../components/cookie_notice.php'; ?>
+<!-- Google reCAPTCHA v3 -->
+<script src="https://www.google.com/recaptcha/api.js?render=6LfCAAksAAAAANvHXlyuTBk4sDmsIhRBOWw7n5QO"></script>
+<script>
+    // Инициализация reCAPTCHA для всех форм
+    function debugRecaptcha() {
+        console.log('=== reCAPTCHA DEBUG ===');
+        const tokenField = document.getElementById('recaptchaToken');
+        console.log('Token field exists:', !!tokenField);
+        console.log('Token value:', tokenField ? tokenField.value : 'NO FIELD');
+
+        // Проверить все формы
+        document.querySelectorAll('form').forEach((form, index) => {
+            const tokenInput = form.querySelector('#recaptchaToken');
+            console.log(`Form ${index}:`, form.id || 'no-id', 'Token input:', !!tokenInput);
+        });
+    }
+
+    // Запустить отладку при загрузке
+    function submitFormWithRecaptcha(form, originalText) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const formData = new FormData(form);
+
+        // Определяем URL для отправки
+        let submitUrl = form.action;
+        if (!submitUrl || submitUrl === '') {
+            // Определяем URL по ID формы или другим признакам
+            if (form.id === 'contactForm') {
+                submitUrl = '/contact/submit';
+            } else if (form.id.includes('led')) {
+                submitUrl = '/led/submit';
+            } else if (form.id.includes('video')) {
+                submitUrl = '/video/submit';
+            } else if (form.id.includes('btl')) {
+                submitUrl = '/btl/submit';
+            } else {
+                submitUrl = '/contact/submit';
+            }
+        }
+
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Отправка...';
+
+        fetch(submitUrl, {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if (response.ok) {
+                    // Успешная отправка
+                    if (typeof showSuccessPopup === 'function') {
+                        showSuccessPopup();
+                    }
+                    form.reset();
+                } else {
+                    // Ошибка
+                    if (typeof showErrorPopup === 'function') {
+                        showErrorPopup();
+                    } else {
+                        alert('Ошибка отправки формы');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Form submission error:', error);
+                if (typeof showErrorPopup === 'function') {
+                    showErrorPopup();
+                } else {
+                    alert('Ошибка отправки формы');
+                }
+            })
+            .finally(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+    }
+
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', initializeRecaptcha);
+</script>
 </body>
 </html>

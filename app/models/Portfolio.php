@@ -52,21 +52,22 @@ class Portfolio extends Model {
         return $result;
     }
 
-    public function getAllActive($limit = 6) {
-        $cacheKey = "all_active_portfolio_$limit";
+    public function getAllActive($limit = null) {
+        $cacheKey = "all_active_portfolio" . ($limit ? "_$limit" : '');
 
         if ($cached = $this->cache->get($cacheKey)) {
             return $cached;
         }
 
-        $intLimit = (int)$limit;
+        $sql = "SELECT * FROM portfolio WHERE is_active = 1 ORDER BY project_date DESC";
+        $params = [];
 
-        $result = $this->db->fetchAll("
-            SELECT * FROM portfolio 
-            WHERE is_active = 1 
-            ORDER BY project_date DESC 
-            LIMIT ?
-        ", [$intLimit]);
+        if ($limit) {
+            $sql .= " LIMIT ?";
+            $params[] = (int)$limit;
+        }
+
+        $result = $this->db->fetchAll($sql, $params);
 
         $this->cache->set($cacheKey, $result);
         return $result;

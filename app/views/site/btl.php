@@ -442,6 +442,15 @@
                         </span>
                         </label>
                     </div>
+                    <!-- reCAPTCHA v3 -->
+                    <input type="hidden" name="recaptcha_token" id="recaptchaToken">
+                    <div class="form-group mb-6">
+                        <div class="text-xs text-gray-400 text-center">
+                            Защищено reCAPTCHA. Отправляя форму, вы соглашаетесь с
+                            <a href="https://policies.google.com/privacy" target="_blank" class="text-highlight hover:underline">Политикой конфиденциальности</a> и
+                            <a href="https://policies.google.com/terms" target="_blank" class="text-highlight hover:underline">Условиями использования</a> Google.
+                        </div>
+                    </div>
                     <button type="submit" class="w-full bg-highlight text-primary font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:bg-transparent hover:text-highlight border-2 border-highlight">
                         Заказать мероприятие
                     </button>
@@ -520,46 +529,6 @@
             const popup = document.getElementById('errorPopup');
             popup.classList.add('hidden');
         }
-
-        // Обработка формы с AJAX
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-
-            // Показываем индикатор загрузки
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Отправка...';
-            submitBtn.disabled = true;
-
-            const formData = new FormData(this);
-
-            fetch('/btl/submit', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => {
-                    if (response.ok) {
-                        // Показываем красивый попап УСПЕХА
-                        showSuccessPopup();
-                        // Сбрасываем форму
-                        this.reset();
-                    } else {
-                        // Показываем попап ОШИБКИ
-                        showErrorPopup();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    // Показываем попап ОШИБКИ
-                    showErrorPopup();
-                })
-                .finally(() => {
-                    // Восстанавливаем кнопку
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
-                });
-        });
 
         // Закрытие попапов по клику на фон
         document.getElementById('successPopup').addEventListener('click', function(e) {

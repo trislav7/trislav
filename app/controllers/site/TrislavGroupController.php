@@ -8,12 +8,12 @@ class TrislavGroupController extends Controller {
 
         // Проверяем кэш страницы
         if ($cached = $cache->get($cacheKey)) {
-            debug_log("TrislavGroupController: Cache HIT for page Trislav Group");
+            
             echo $cached;
             return;
         }
 
-        debug_log("TrislavGroupController: Cache MISS for page Trislav Group");
+        
 
         // Начинаем буферизацию для кэширования
         ob_start();
@@ -53,9 +53,18 @@ class TrislavGroupController extends Controller {
     }
 
     public function contactSubmit() {
-
         if ($_POST) {
             try {
+                // ВАЛИДАЦИЯ reCAPTCHA
+                $recaptchaValidator = new RecaptchaValidator();
+                $recaptchaToken = $_POST['recaptcha_token'] ?? '';
+
+                if (!$recaptchaValidator->validate($recaptchaToken)) {
+                    
+                    header('HTTP/1.1 400 Bad Request');
+                    exit;
+                }
+
                 $leadModel = new Lead();
 
                 // Проверяем согласие с политикой

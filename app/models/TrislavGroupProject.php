@@ -2,22 +2,21 @@
 class TrislavGroupProject extends Model {
     protected $table = 'trislav_group_projects';
 
+
     public function getAllActive() {
         $cacheKey = "all_active_trislav_projects";
 
         if ($cached = $this->cache->get($cacheKey)) {
-            debug_log("TrislavGroupProject: Cache HIT for all_active_trislav_projects");
             return $cached;
         }
 
-        debug_log("TrislavGroupProject: Cache MISS for all_active_trislav_projects");
         $result = $this->db->fetchAll("
-            SELECT * FROM {$this->table} 
+            SELECT * FROM trislav_group_projects 
             WHERE is_active = 1 
             ORDER BY order_index
         ");
 
-        $this->cache->set($cacheKey, $result, 7200);
+        $this->cache->set($cacheKey, $result);
         return $result;
     }
 

@@ -57,19 +57,15 @@ if (IS_TRISLAV_MEDIA) {
     $router->add('GET', '/btl', 'BtlController@index');
     $router->add('POST', '/btl/submit', 'BtlController@submitForm');
     $router->add('POST', '/contact/submit', 'ContactController@submit');
+    $router->add('GET', '/privacy-policy', 'HomeController@privacyPolicy');
 } else {
     $router->add('GET', '/', 'TrislavGroupController@index');
     $router->add('POST', '/contact/submit', 'TrislavGroupController@contactSubmit');
+    $router->add('GET', '/privacy-policy', 'TrislavGroupController@privacyPolicy');
 }
 
-// Добавляем после существующих маршрутов
-$router->add('GET', '/privacy-policy', 'TrislavGroupController@privacyPolicy');
-
-// Для медиа сайта
-if (IS_TRISLAV_MEDIA) {
-    $router->add('GET', '/privacy-policy', 'HomeController@privacyPolicy');
-}
 $router->add('GET', '/video/stream', 'VideoProxyController@stream');
+$router->add('GET', '/sitemap.xml', 'SitemapController@index');
 
 // ЯВНО УСТАНАВЛИВАЕМ ЗАГОЛОВОК 200 ПЕРЕД РОУТЕРОМ
 if (!headers_sent()) {

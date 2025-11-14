@@ -43,13 +43,13 @@ class VideoProxyController extends Controller {
     }
     
     private function getTemporaryDirectUrl($diskService, $diskPath) {
-        debug_log("Getting temporary direct URL for: " . $diskPath);
+        
         
         // Используем метод скачивания, но с временной ссылкой
         $downloadUrl = $diskService->getPublicUrl($diskPath);
         
         if ($downloadUrl) {
-            debug_log("Temporary direct URL obtained: " . $downloadUrl);
+            
             return $downloadUrl;
         }
         
@@ -57,7 +57,7 @@ class VideoProxyController extends Controller {
     }
     
     private function redirectToUrl($url) {
-        debug_log("Redirecting to: " . $url);
+        
         header('Location: ' . $url);
         exit;
     }

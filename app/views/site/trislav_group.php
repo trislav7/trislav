@@ -435,6 +435,15 @@ ob_start();
                         </span>
                         </label>
                     </div>
+                    <!-- reCAPTCHA v3 -->
+                    <input type="hidden" name="recaptcha_token" id="recaptchaToken">
+                    <div class="form-group mb-6">
+                        <div class="text-xs text-gray-400 text-center">
+                            Защищено reCAPTCHA. Отправляя форму, вы соглашаетесь с
+                            <a href="https://policies.google.com/privacy" target="_blank" class="text-highlight hover:underline">Политикой конфиденциальности</a> и
+                            <a href="https://policies.google.com/terms" target="_blank" class="text-highlight hover:underline">Условиями использования</a> Google.
+                        </div>
+                    </div>
                     <button type="submit" class="w-full bg-highlight text-primary font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:bg-transparent hover:text-highlight border-2 border-highlight">
                         Отправить заявку
                     </button>

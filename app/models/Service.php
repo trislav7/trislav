@@ -38,7 +38,7 @@ class Service extends Model {
         $result = $this->db->fetchAll("
             SELECT * FROM services 
             WHERE is_active = 1 
-            ORDER BY category, order_index
+            ORDER BY order_index ASC, id DESC
         ");
 
         $this->cache->set($cacheKey, $result);

@@ -68,7 +68,6 @@ class AdminActionsController extends AdminBaseController {
      */
     public function clear_cache() {
         $type = $_GET['type'] ?? 'all';
-        debug_log("AdminActionsController: Manual cache clearance requested for type: " . $type);
 
         $cleared = 0;
         switch ($type) {
@@ -100,12 +99,10 @@ class AdminActionsController extends AdminBaseController {
                 $cleared = $this->cacheManager->clearAllCache();
                 break;
             default:
-                debug_log("AdminActionsController: Unknown cache type: " . $type);
                 break;
         }
 
         $this->setFlashMessage('success', "Кэш очищен ($cleared файлов)");
-        debug_log("AdminActionsController: Manual cache clearance completed for " . $type);
 
         // Редирект обратно на предыдущую страницу
         $referer = $_SERVER['HTTP_REFERER'] ?? '/admin.php?action=dashboard';

@@ -6,11 +6,11 @@ class SiteSetting extends Model {
         $cacheKey = "site_setting_{$key}";
 
         if ($cached = $this->cache->get($cacheKey)) {
-            debug_log("SiteSetting: Cache HIT for key: {$key}");
+            
             return $cached;
         }
 
-        debug_log("SiteSetting: Cache MISS for key: {$key}");
+        
         $result = $this->db->fetch("SELECT * FROM {$this->table} WHERE setting_key = ?", [$key]);
 
         $this->cache->set($cacheKey, $result, 86400); // 24 часа
@@ -34,11 +34,11 @@ class SiteSetting extends Model {
         $cacheKey = "all_site_settings";
 
         if ($cached = $this->cache->get($cacheKey)) {
-            debug_log("SiteSetting: Cache HIT for all settings");
+            
             return $cached;
         }
 
-        debug_log("SiteSetting: Cache MISS for all settings");
+        
         $settings = $this->getAll();
         $result = [];
         foreach ($settings as $setting) {
@@ -53,14 +53,14 @@ class SiteSetting extends Model {
      * Очищает кэш настроек
      */
     private function clearSettingsCache() {
-        debug_log("SiteSetting: Clearing settings cache");
+        
 
         // Очищаем все ключи настроек
         $keys = $this->cache->getAllKeys();
         foreach ($keys as $key) {
             if (strpos($key, 'site_setting_') === 0 || $key === 'all_site_settings') {
                 $this->cache->delete($key);
-                debug_log("SiteSetting: Deleted cache key: {$key}");
+                
             }
         }
 

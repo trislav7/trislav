@@ -6,11 +6,11 @@ class TrislavGroupClient extends Model {
         $cacheKey = "all_active_trislav_clients";
 
         if ($cached = $this->cache->get($cacheKey)) {
-            debug_log("TrislavGroupClient: Cache HIT for all_active_trislav_clients");
+            
             return $cached;
         }
 
-        debug_log("TrislavGroupClient: Cache MISS for all_active_trislav_clients");
+        
         $result = $this->db->fetchAll("
             SELECT * FROM {$this->table} 
             WHERE is_active = 1 

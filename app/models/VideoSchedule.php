@@ -32,8 +32,8 @@ class VideoSchedule extends Model {
     public function generateScheduleData($shoppingCenterId) {
         $clients = $this->getClientsForShoppingCenter($shoppingCenterId);
 
-        debug_log("VideoSchedule: generateScheduleData started for center: " . $shoppingCenterId);
-        debug_log("VideoSchedule: Found " . count($clients) . " clients with videos");
+        
+        
 
         // Правила тарифов: в каких блоках должен появляться клиент
         $tariffRules = [
@@ -72,14 +72,14 @@ class VideoSchedule extends Model {
 
         // Получаем список случайных видео для заглушек
         $randomDefaultVideos = $this->getRandomDefaultVideos();
-        debug_log("VideoSchedule: Available default videos: " . count($randomDefaultVideos));
+        
 
         // Дополняем оставшиеся слоты до 12 в каждом блоке случайными видео
         for ($block = 1; $block <= 4; $block++) {
             $currentCount = count($schedule["block_{$block}"]);
             $slotsToFill = 12 - $currentCount;
 
-            debug_log("VideoSchedule: Block {$block} has {$currentCount} videos, need to fill {$slotsToFill} slots");
+            
 
             // Если в блоке меньше 12 видео, добавляем случайные заглушки
             for ($i = 0; $i < $slotsToFill; $i++) {
@@ -91,11 +91,7 @@ class VideoSchedule extends Model {
             $schedule["block_{$block}"] = array_slice($schedule["block_{$block}"], 0, 12);
         }
 
-        debug_log("VideoSchedule: Generated schedule with blocks: " .
-            count($schedule['block_1']) . "/" .
-            count($schedule['block_2']) . "/" .
-            count($schedule['block_3']) . "/" .
-            count($schedule['block_4']));
+        
 
         // Создаем последовательность для скачивания
         $downloadSequence = [];
@@ -146,10 +142,10 @@ class VideoSchedule extends Model {
         $defaultVideosDir = './uploads/def_video/';
         $videos = [];
 
-        debug_log("VideoSchedule: Scanning default videos directory: " . $defaultVideosDir);
+        
 
         if (!is_dir($defaultVideosDir)) {
-            debug_log("VideoSchedule ERROR: Default videos directory not found");
+            
             return $videos;
         }
 
@@ -167,7 +163,7 @@ class VideoSchedule extends Model {
             }
         }
 
-        debug_log("VideoSchedule: Found " . count($videos) . " default videos");
+        
         return $videos;
     }
 
@@ -176,7 +172,7 @@ class VideoSchedule extends Model {
      */
     private function getRandomDefaultVideo($availableVideos) {
         if (empty($availableVideos)) {
-            debug_log("VideoSchedule: No default videos available, using fallback");
+            
             return [
                 'client_name' => 'Стандартная реклама',
                 'tariff_name' => 'По умолчанию',
@@ -189,7 +185,7 @@ class VideoSchedule extends Model {
         $randomIndex = array_rand($availableVideos);
         $selectedVideo = $availableVideos[$randomIndex];
 
-        debug_log("VideoSchedule: Selected random default video: " . $selectedVideo['filename']);
+        
 
         return [
             'client_name' => 'Стандартная реклама',
@@ -245,7 +241,7 @@ class VideoSchedule extends Model {
     private function copyDefaultAd($tempDir, $counter) {
         $defaultVideosDir = './uploads/def_video/';
 
-        debug_log("VideoSchedule: copyDefaultAd looking for videos in: " . $defaultVideosDir);
+        
 
         // Получаем список видео файлов
         $videoFiles = [];
@@ -257,10 +253,10 @@ class VideoSchedule extends Model {
             $videoFiles = array_merge($videoFiles, $files);
         }
 
-        debug_log("VideoSchedule: Found " . count($videoFiles) . " video files for default ad");
+        
 
         if (empty($videoFiles)) {
-            debug_log("VideoSchedule ERROR: No video files found for default ad");
+            
             return $this->createEmptyVideoFile($tempDir, $counter);
         }
 
@@ -268,17 +264,17 @@ class VideoSchedule extends Model {
         $randomIndex = array_rand($videoFiles);
         $selectedVideo = $videoFiles[$randomIndex];
 
-        debug_log("VideoSchedule: Selected random default video: " . $selectedVideo);
+        
 
         $filename = sprintf("%05d", $counter) . '.mp4';
         $newPath = $tempDir . '/' . $filename;
 
         // Копируем выбранное видео
         if (copy($selectedVideo, $newPath)) {
-            debug_log("VideoSchedule SUCCESS: Copied default video to: " . $newPath);
+            
             return $newPath;
         } else {
-            debug_log("VideoSchedule ERROR: Failed to copy default video");
+            
             return $this->createEmptyVideoFile($tempDir, $counter);
         }
     }

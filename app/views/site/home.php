@@ -299,46 +299,6 @@
             popup.classList.add('hidden');
         }
 
-        // Обработка формы с AJAX
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-
-            // Показываем индикатор загрузки
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Отправка...';
-            submitBtn.disabled = true;
-
-            const formData = new FormData(this);
-
-            fetch('/contact/submit', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => {
-                    if (response.ok) {
-                        // Показываем красивый попап УСПЕХА
-                        showSuccessPopup();
-                        // Сбрасываем форму
-                        this.reset();
-                    } else {
-                        // Показываем попап ОШИБКИ
-                        showErrorPopup();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    // Показываем попап ОШИБКИ
-                    showErrorPopup();
-                })
-                .finally(() => {
-                    // Восстанавливаем кнопку
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
-                });
-        });
-
         // Закрытие попапов по клику на фон
         document.getElementById('successPopup').addEventListener('click', function(e) {
             if (e.target === this) {

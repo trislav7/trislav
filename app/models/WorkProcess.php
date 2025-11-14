@@ -7,11 +7,11 @@ class WorkProcess extends Model {
         $cacheKey = "all_active_work_processes";
 
         if ($cached = $this->cache->get($cacheKey)) {
-            debug_log("WorkProcess: Cache HIT for all_active_work_processes");
+            
             return $cached;
         }
 
-        debug_log("WorkProcess: Cache MISS for all_active_work_processes");
+        
         $result = $this->db->fetchAll("
             SELECT * FROM {$this->table} 
             WHERE is_active = 1 

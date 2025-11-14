@@ -262,7 +262,6 @@ class YandexDiskService {
     }
 
     public function getPublicUrl($remotePath) {
-        debug_log("Getting direct video URL for: " . $remotePath);
 
         try {
             // Сначала получаем ссылку для скачивания
@@ -287,18 +286,15 @@ class YandexDiskService {
             if ($httpCode === 200) {
                 $data = json_decode($response, true);
                 if (isset($data['href'])) {
-                    debug_log("Direct download URL obtained: " . $data['href']);
                     return $data['href'];
                 }
             }
 
-            debug_log("Failed to get direct URL. HTTP Code: " . $httpCode);
 
             // Фолбэк: попробуем получить через публикацию
             return $this->getPublicUrlFallback($remotePath);
 
         } catch (Exception $e) {
-            debug_log("Error getting direct URL: " . $e->getMessage());
             return $this->getPublicUrlFallback($remotePath);
         }
     }
@@ -307,7 +303,6 @@ class YandexDiskService {
      * Фолбэк метод через публикацию файла
      */
     private function getPublicUrlFallback($remotePath) {
-        debug_log("Trying fallback method for: " . $remotePath);
 
         try {
             // Публикуем файл
@@ -329,7 +324,6 @@ class YandexDiskService {
             curl_close($ch);
 
             if ($httpCode === 200 || $httpCode === 202) {
-                debug_log("File published successfully");
 
                 // Получаем информацию о файле
                 $metaUrl = $this->baseUrl . '?path=' . urlencode($remotePath);
@@ -351,7 +345,6 @@ class YandexDiskService {
                 if ($httpCode === 200) {
                     $data = json_decode($response, true);
                     if (isset($data['public_url'])) {
-                        debug_log("Public page URL obtained: " . $data['public_url']);
 
                         // Преобразуем URL страницы в прямую ссылку на файл
                         return $this->convertToDirectLink($data['public_url']);
@@ -362,7 +355,6 @@ class YandexDiskService {
             return null;
 
         } catch (Exception $e) {
-            debug_log("Error in fallback method: " . $e->getMessage());
             return null;
         }
     }
@@ -371,13 +363,11 @@ class YandexDiskService {
      * Преобразует URL страницы Яндекс.Диска в прямую ссылку на файл
      */
     private function convertToDirectLink($pageUrl) {
-        debug_log("Converting page URL to direct link: " . $pageUrl);
 
         // Для ссылок вида https://yadi.sk/i/XXX извлекаем ID и формируем прямую ссылку
         if (preg_match('/yadi\.sk\/i\/([a-zA-Z0-9_-]+)/', $pageUrl, $matches)) {
             $fileId = $matches[1];
             $directUrl = "https://yadi.sk/d/{$fileId}";
-            debug_log("Converted to direct download URL: " . $directUrl);
             return $directUrl;
         }
 
@@ -385,7 +375,6 @@ class YandexDiskService {
     }
 
     public function getTemporaryDirectUrl($remotePath) {
-        debug_log("Getting temporary direct URL for: " . $remotePath);
 
         try {
             $url = $this->baseUrl . '/download?path=' . urlencode($remotePath);
@@ -409,16 +398,13 @@ class YandexDiskService {
             if ($httpCode === 200) {
                 $data = json_decode($response, true);
                 if (isset($data['href'])) {
-                    debug_log("Temporary direct URL obtained: " . $data['href']);
                     return $data['href'];
                 }
             }
 
-            debug_log("Failed to get temporary direct URL. HTTP Code: " . $httpCode);
             return null;
 
         } catch (Exception $e) {
-            debug_log("Error getting temporary direct URL: " . $e->getMessage());
             return null;
         }
     }

@@ -32,7 +32,7 @@ class Model {
 
         // Автоматически очищаем кэш после создания
         $this->clearRelevantCache();
-        debug_log("Model: Cache cleared after CREATE operation for {$this->table}");
+        
 
         return $id;
     }
@@ -45,7 +45,7 @@ class Model {
      */
     protected function clearRelevantCache() {
         $modelName = get_class($this);
-        debug_log("Model: Auto-clearing relevant cache for " . $modelName);
+        
 
         switch ($modelName) {
             case 'Service':
@@ -89,7 +89,7 @@ class Model {
 
             default:
                 // Для неизвестных моделей очищаем весь кэш
-                debug_log("Model: Unknown model {$modelName}, clearing all cache");
+                
                 $this->cacheManager->clearAllCache();
                 break;
         }
@@ -110,7 +110,7 @@ class Model {
 
         // Автоматически очищаем кэш после обновления
         $this->clearRelevantCache();
-        debug_log("Model: Cache cleared after UPDATE operation for {$this->table}");
+        
 
         return $result;
     }
@@ -122,7 +122,7 @@ class Model {
 
         // Автоматически очищаем кэш после удаления
         $this->clearRelevantCache();
-        debug_log("Model: Cache cleared after DELETE operation for {$this->table}");
+        
 
         return $result;
     }

@@ -61,7 +61,7 @@
                             include $componentPath;
                         } else {
                             // Fallback на старую версию если компонент не найден
-                            debug_log("Компонент file_upload.php не найден по пути: " . $componentPath);
+                            
                             ?>
                             <label class="block text-light font-semibold mb-3">Изображение</label>
                             <input type="file" name="image" accept="image/*"

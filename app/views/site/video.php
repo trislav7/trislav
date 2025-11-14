@@ -129,7 +129,7 @@
         </div>
     </section>
 
-    <!-- Блок "Наши работы" со слайдером -->
+    <!-- Блок "Наши работы" со слайдером и попапом -->
     <section id="portfolio" class="py-16 bg-primary px-4">
         <div class="container mx-auto max-w-6xl">
             <div class="text-center mb-16">
@@ -144,11 +144,16 @@
             ?>
 
             <?php if (!empty($videoWorks)): ?>
-                <!-- Слайдер для видео работ -->
+                <!-- Слайдер для видео работ с превью -->
                 <div class="video-works-slider">
                     <?php foreach ($videoWorks as $work): ?>
                         <div class="px-3">
-                            <div class="bg-white/5 rounded-xl p-4 mx-auto border border-highlight/20 h-full flex flex-col">
+                            <div class="bg-white/5 rounded-xl p-4 mx-auto border border-highlight/20 h-full flex flex-col cursor-pointer video-item"
+                                 data-video-id="<?= $work['id'] ?>"
+                                 data-video-url="<?= getPortfolioVideoUrl($work) ?>"
+                                 data-video-type="<?= !empty($work['video_url']) ? 'iframe' : 'html5' ?>"
+                                 data-video-title="<?= htmlspecialchars($work['title']) ?>">
+
                                 <div class="mb-3">
                                     <h3 class="text-lg font-bold text-highlight mb-1">
                                         <?= htmlspecialchars($work['title']) ?>
@@ -158,32 +163,32 @@
                                     <?php endif; ?>
                                 </div>
 
-                                <!-- Видео плеер с вертикальным соотношением 9:16 -->
-                                <div class="video-container mb-3 rounded-lg overflow-hidden flex-grow">
-                                    <?php if (!empty($work['video_url'])): ?>
-                                        <!-- Встроенное видео с YouTube/Vimeo -->
-                                        <div class="aspect-w-9 aspect-h-16">
-                                            <iframe src="<?= htmlspecialchars($work['video_url']) ?>"
-                                                    frameborder="0"
-                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                    allowfullscreen
-                                                    class="w-full h-full video-iframe"
-                                                    data-video-id="<?= $work['id'] ?>">
-                                            </iframe>
+                                <!-- Превью изображение с кнопкой воспроизведения -->
+                                <div class="video-preview-container mb-3 rounded-lg overflow-hidden flex-grow relative group">
+                                    <!-- Canvas для отрисовки последнего кадра -->
+                                    <canvas id="previewCanvas_<?= $work['id'] ?>"
+                                            class="w-full h-full hidden"></canvas>
+
+                                    <!-- Заглушка пока загружается превью -->
+                                    <div id="previewPlaceholder_<?= $work['id'] ?>"
+                                         class="w-full h-full bg-gradient-to-br from-highlight/20 to-accent/20 flex items-center justify-center">
+                                        <div class="text-center">
+                                            <i class="fas fa-play-circle text-4xl text-highlight mb-2"></i>
+                                            <p class="text-highlight text-sm font-semibold">Загрузка превью...</p>
                                         </div>
-                                    <?php elseif (!empty($work['yandex_disk_path']) || !empty($work['video_filename'])): ?>
-                                        <!-- Видео с Яндекс.Диска или локальное -->
-                                        <div class="aspect-w-9 aspect-h-16">
-                                            <video controls class="w-full h-full rounded-lg portfolio-video"
-                                                   data-video-id="<?= $work['id'] ?>">
-                                                <source src="<?= getPortfolioVideoUrl($work) ?>" type="video/mp4">
-                                                Ваш браузер не поддерживает видео.
-                                            </video>
+                                    </div>
+
+                                    <!-- Наложение с кнопкой воспроизведения -->
+                                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                        <div class="w-16 h-16 bg-highlight/90 rounded-full flex items-center justify-center transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                                            <i class="fas fa-play text-2xl text-white ml-1"></i>
                                         </div>
-                                    <?php else: ?>
-                                        <!-- Заглушка если видео нет -->
-                                        <div class="w-full h-64 bg-highlight/20 rounded-lg flex items-center justify-center">
-                                            <i class="fas fa-video text-4xl text-highlight/50"></i>
+                                    </div>
+
+                                    <!-- Индикатор длительности -->
+                                    <?php if (!empty($work['video_duration'])): ?>
+                                        <div class="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                                            <?= htmlspecialchars($work['video_duration']) ?>
                                         </div>
                                     <?php endif; ?>
                                 </div>
@@ -223,6 +228,30 @@
             <?php endif; ?>
         </div>
     </section>
+
+    <!-- Попап для видео -->
+    <div id="videoPopup" class="fixed inset-0 bg-black/95 flex items-center justify-center z-50 hidden">
+        <!-- Кнопка закрытия -->
+        <button id="closeVideoPopup" class="absolute top-4 right-4 text-white hover:text-highlight transition-colors duration-300 z-50 bg-black/50 rounded-full w-10 h-10 flex items-center justify-center">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+
+        <!-- Контент попапа -->
+        <div class="relative w-full h-full flex items-center justify-center">
+            <!-- Видео контейнер -->
+            <div class="w-full h-full max-w-6xl max-h-[90vh] mx-4">
+                <!-- Заголовок -->
+                <div class="absolute top-4 left-4 z-30 bg-black/70 rounded-lg px-4 py-2 max-w-md">
+                    <h3 id="videoPopupTitle" class="text-lg font-bold text-white"></h3>
+                </div>
+
+                <!-- Видео контейнер -->
+                <div id="videoPopupContent" class="w-full h-full bg-black rounded-lg overflow-hidden">
+                    <!-- Видео будет загружено динамически -->
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Контактная форма -->
     <section id="contact" class="py-16 bg-secondary px-4">
@@ -291,6 +320,15 @@
                         </span>
                         </label>
                     </div>
+                    <!-- reCAPTCHA v3 -->
+                    <input type="hidden" name="recaptcha_token" id="recaptchaToken">
+                    <div class="form-group mb-6">
+                        <div class="text-xs text-gray-400 text-center">
+                            Защищено reCAPTCHA. Отправляя форму, вы соглашаетесь с
+                            <a href="https://policies.google.com/privacy" target="_blank" class="text-highlight hover:underline">Политикой конфиденциальности</a> и
+                            <a href="https://policies.google.com/terms" target="_blank" class="text-highlight hover:underline">Условиями использования</a> Google.
+                        </div>
+                    </div>
                     <button type="submit" class="w-full bg-highlight text-primary font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:bg-transparent hover:text-highlight border-2 border-highlight">
                         Обсудить проект
                     </button>
@@ -348,32 +386,65 @@
     </div>
 
     <style>
-        .video-works-slider .slick-list {
-            margin: 0 -8px;
+        /* Стили для полноэкранного видеопопапа */
+        #videoPopup {
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
+        #videoPopup:not(.hidden) {
+            opacity: 1;
+        }
+
+        #videoPopup > div {
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        #videoPopup:not(.hidden) > div {
+            transform: scale(1);
+        }
+
+        /* Анимация кнопки воспроизведения */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .video-item:hover .fa-play {
+            animation: pulse 2s infinite;
+        }
+
+        /* Адаптивность попапа */
+        @media (max-width: 768px) {
+            .video-preview-container {
+                min-height: 180px;
+                max-height: 220px;
+            }
+
+            #videoPopup > div {
+                margin: 0.5rem;
+            }
+
+            #closeVideoPopup {
+                top: 1rem;
+                right: 1rem;
+                width: 8px;
+                height: 8px;
+            }
+        }
+
+        /* Улучшаем отображение слайдера */
         .video-works-slider .slick-slide {
             padding: 0 8px;
-            height: auto;
         }
 
-        /* Десктоп: 3 в ряд, планшет: 2 в ряд, мобильный: 1 в ряд */
-        @media (min-width: 1024px) {
-            .video-works-slider .slick-slide {
-                width: 33.333% !important; /* 3 в ряд */
-            }
-        }
-
-        @media (min-width: 768px) and (max-width: 1023px) {
-            .video-works-slider .slick-slide {
-                width: 50% !important; /* 2 в ряд */
-            }
-        }
-
-        @media (max-width: 767px) {
-            .video-works-slider .slick-slide {
-                width: 100% !important; /* 1 в ряд */
-            }
+        .video-works-slider .bg-white\\/5 {
+            padding: 1rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
 
         /* Вертикальное соотношение сторон 9:16 для видео 1080x1920 */
@@ -553,29 +624,27 @@
     </style>
 
     <script>
-        // Инициализация слайдера видео работ с 3 элементами на десктопе
+        // Инициализация слайдера видео работ с превью
         document.addEventListener('DOMContentLoaded', function() {
             $('.video-works-slider').slick({
                 dots: true,
                 arrows: true,
-                infinite: true,
+                infinite: false,
                 speed: 500,
-                slidesToShow: 3, // 3 на десктопе по умолчанию
+                slidesToShow: 3,
                 slidesToScroll: 1,
-                autoplay: true,
-                autoplaySpeed: 6000,
-                pauseOnHover: true,
+                autoplay: false,
                 adaptiveHeight: false,
                 responsive: [
                     {
-                        breakpoint: 1024, // Десктоп
+                        breakpoint: 1024,
                         settings: {
                             slidesToShow: 3,
                             slidesToScroll: 1
                         }
                     },
                     {
-                        breakpoint: 768, // Планшет
+                        breakpoint: 768,
                         settings: {
                             slidesToShow: 2,
                             slidesToScroll: 1,
@@ -583,7 +652,7 @@
                         }
                     },
                     {
-                        breakpoint: 640, // Мобильный
+                        breakpoint: 640,
                         settings: {
                             slidesToShow: 1,
                             slidesToScroll: 1,
@@ -593,85 +662,237 @@
                 ]
             });
 
-            // Управление видео: остановка других при воспроизведении одного
-            initializeVideoControls();
+            // Инициализация видеопопапа
+            initializeVideoPopup();
+
+            // Генерация превью из последних кадров видео
+            setTimeout(() => {
+                generateVideoPreviews(); // Используйте эту функцию для последнего кадра
+                // ИЛИ generateFirstFramePreviews(); // Используйте эту для первого кадра
+            }, 1000);
         });
 
-        // Функция для управления видео
-        function initializeVideoControls() {
-            debug_log("Initializing video controls for vertical portfolio videos");
+        // Функция для генерации превью из последнего кадра видео
+        function generateVideoPreviews() {
+            document.querySelectorAll('.video-item').forEach(item => {
+                const videoId = item.dataset.videoId;
+                const videoUrl = item.dataset.videoUrl;
+                const videoType = item.dataset.videoType;
 
-            // Получаем все видео элементы
-            const videos = document.querySelectorAll('.portfolio-video');
-            const iframes = document.querySelectorAll('.video-iframe');
+                // Пропускаем iframe видео (YouTube/Vimeo)
+                if (videoType === 'iframe') {
+                    // Для iframe можно использовать стандартные превью или оставить заглушку
+                    return;
+                }
 
-            debug_log(`Found ${videos.length} HTML5 videos and ${iframes.length} iframe videos`);
+                // Для HTML5 видео генерируем превью
+                generateVideoPreview(videoId, videoUrl);
+            });
+        }
 
-            // Обработка HTML5 видео
-            videos.forEach(video => {
-                video.addEventListener('play', function() {
-                    debug_log(`Vertical video ${this.dataset.videoId} started playing`);
+        function generateVideoPreview(videoId, videoUrl) {
+            const canvas = document.getElementById(`previewCanvas_${videoId}`);
+            const placeholder = document.getElementById(`previewPlaceholder_${videoId}`);
 
-                    // Останавливаем все другие HTML5 видео
-                    videos.forEach(otherVideo => {
-                        if (otherVideo !== this && !otherVideo.paused) {
-                            debug_log(`Pausing other vertical video ${otherVideo.dataset.videoId}`);
-                            otherVideo.pause();
-                        }
-                    });
+            if (!canvas || !placeholder) return;
 
-                    // Пауза для iframe видео (YouTube/Vimeo)
-                    pauseAllIframes();
+            const video = document.createElement('video');
+            video.crossOrigin = 'anonymous'; // Важно для CORS
+            video.preload = 'metadata';
+
+            video.addEventListener('loadedmetadata', function() {
+                // Устанавливаем время на последнюю секунду (или 90% длительности)
+                const targetTime = Math.max(0, video.duration - 1);
+                video.currentTime = targetTime;
+            });
+
+            video.addEventListener('seeked', function() {
+                // Когда видео перемоталось на нужный кадр
+                const ctx = canvas.getContext('2d');
+
+                // Устанавливаем размеры canvas как у видео
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                // Рисуем кадр на canvas
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // Показываем canvas, скрываем заглушку
+                canvas.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+
+                // Очищаем видео из памяти
+                video.src = '';
+                video.load();
+            });
+
+            video.addEventListener('error', function(e) {
+                console.warn(`Не удалось загрузить видео для превью ${videoId}:`, e);
+                // Можно оставить заглушку или показать стандартную иконку
+            });
+
+            // Начинаем загрузку
+            video.src = videoUrl;
+        }
+
+        // Функция для создания превью из первого кадра (альтернативный вариант)
+        function generateFirstFramePreviews() {
+            document.querySelectorAll('.video-item').forEach(item => {
+                const videoId = item.dataset.videoId;
+                const videoUrl = item.dataset.videoUrl;
+                const videoType = item.dataset.videoType;
+
+                if (videoType === 'iframe') return;
+
+                generateFirstFramePreview(videoId, videoUrl);
+            });
+        }
+
+        function generateFirstFramePreview(videoId, videoUrl) {
+            const canvas = document.getElementById(`previewCanvas_${videoId}`);
+            const placeholder = document.getElementById(`previewPlaceholder_${videoId}`);
+
+            if (!canvas || !placeholder) return;
+
+            const video = document.createElement('video');
+            video.crossOrigin = 'anonymous';
+            video.preload = 'metadata';
+
+            video.addEventListener('loadeddata', function() {
+                // Берем первый кадр (0.1 секунда чтобы избежать черного кадра)
+                video.currentTime = 0.1;
+            });
+
+            video.addEventListener('seeked', function() {
+                const ctx = canvas.getContext('2d');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                canvas.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+
+                video.src = '';
+                video.load();
+            });
+
+            video.addEventListener('error', function(e) {
+                console.warn(`Не удалось загрузить видео для превью ${videoId}:`, e);
+            });
+
+            video.src = videoUrl;
+        }
+
+        // Функция для управления видеопопапом
+        function initializeVideoPopup() {
+            const videoPopup = document.getElementById('videoPopup');
+            const closeBtn = document.getElementById('closeVideoPopup');
+            const videoPopupContent = document.getElementById('videoPopupContent');
+            const videoPopupTitle = document.getElementById('videoPopupTitle');
+
+            let currentVideoElement = null;
+
+            // Обработчики кликов на видео элементы
+            document.querySelectorAll('.video-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const videoId = this.dataset.videoId;
+                    const videoUrl = this.dataset.videoUrl;
+                    const videoType = this.dataset.videoType;
+                    const videoTitle = this.dataset.videoTitle;
+
+                    // Устанавливаем заголовок
+                    videoPopupTitle.textContent = videoTitle;
+
+                    // Очищаем предыдущее видео
+                    videoPopupContent.innerHTML = '';
+
+                    // Создаем новое видео в зависимости от типа
+                    if (videoType === 'iframe') {
+                        // YouTube/Vimeo iframe
+                        const iframe = document.createElement('iframe');
+                        iframe.src = videoUrl + (videoUrl.includes('?') ? '&' : '?') + 'autoplay=1';
+                        iframe.frameBorder = '0';
+                        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                        iframe.allowFullscreen = true;
+                        iframe.className = 'w-full h-full';
+                        videoPopupContent.appendChild(iframe);
+                        currentVideoElement = iframe;
+                    } else {
+                        // HTML5 видео
+                        const video = document.createElement('video');
+                        video.src = videoUrl;
+                        video.controls = true;
+                        video.autoplay = true;
+                        video.className = 'w-full h-full';
+                        video.style.objectFit = 'contain'; // Чтобы видео правильно масштабировалось
+                        videoPopupContent.appendChild(video);
+                        currentVideoElement = video;
+                    }
+
+                    // Показываем попап
+                    videoPopup.classList.remove('hidden');
+                    setTimeout(() => {
+                        videoPopup.classList.add('opacity-100');
+                    }, 50);
+
+                    // Предотвращаем прокрутку body
+                    document.body.style.overflow = 'hidden';
                 });
             });
 
-            // Обработка iframe видео (YouTube/Vimeo)
-            iframes.forEach(iframe => {
-                iframe.addEventListener('mouseenter', function() {
-                    debug_log(`Vertical iframe ${this.dataset.videoId} focused`);
-                    // При фокусе на iframe, пауза для HTML5 видео
-                    pauseAllHTML5Videos();
-                });
+            // Закрытие попапа
+            function closeVideoPopup() {
+                // Останавливаем видео
+                if (currentVideoElement) {
+                    if (currentVideoElement.tagName === 'VIDEO') {
+                        currentVideoElement.pause();
+                        currentVideoElement.currentTime = 0;
+                    } else if (currentVideoElement.tagName === 'IFRAME') {
+                        // Для iframe заменяем src чтобы остановить видео
+                        const src = currentVideoElement.src;
+                        currentVideoElement.src = src.replace('autoplay=1', 'autoplay=0');
+                    }
+                    currentVideoElement = null;
+                }
+
+                // Скрываем попап
+                videoPopup.classList.remove('opacity-100');
+
+                setTimeout(() => {
+                    videoPopup.classList.add('hidden');
+                    videoPopupContent.innerHTML = '';
+
+                    // Восстанавливаем прокрутку body
+                    document.body.style.overflow = '';
+                }, 300);
+            }
+
+            // Обработчики закрытия
+            closeBtn.addEventListener('click', closeVideoPopup);
+
+            // Закрытие по клику на фон
+            videoPopup.addEventListener('click', function(e) {
+                if (e.target === this || e.target === videoPopupContent) {
+                    closeVideoPopup();
+                }
             });
 
-            // Также останавливаем видео при смене слайда
+            // Закрытие по ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !videoPopup.classList.contains('hidden')) {
+                    closeVideoPopup();
+                }
+            });
+
+            // Останавливаем видео при смене слайда
             $('.video-works-slider').on('beforeChange', function(event, slick, currentSlide, nextSlide) {
-                debug_log(`Slider changing from slide ${currentSlide} to ${nextSlide}`);
-                pauseAllVideos();
-            });
-        }
-
-        // Функция для паузы всех HTML5 видео
-        function pauseAllHTML5Videos() {
-            const videos = document.querySelectorAll('.portfolio-video');
-            videos.forEach(video => {
-                if (!video.paused) {
-                    debug_log(`Pausing vertical HTML5 video ${video.dataset.videoId} on slide change`);
-                    video.pause();
+                if (!videoPopup.classList.contains('hidden')) {
+                    closeVideoPopup();
                 }
             });
         }
 
-        // Функция для паузы всех iframe видео
-        function pauseAllIframes() {
-            const iframes = document.querySelectorAll('.video-iframe');
-            iframes.forEach(iframe => {
-                try {
-                    // Пытаемся отправить команду паузы в iframe
-                    iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-                } catch (e) {
-                    debug_log(`Could not pause vertical iframe ${iframe.dataset.videoId}: ${e.message}`);
-                }
-            });
-        }
-
-        // Функция для паузы всех видео
-        function pauseAllVideos() {
-            pauseAllHTML5Videos();
-            pauseAllIframes();
-        }
-
-        // Функции для попапов (существующий код)
+        // Функции для успешного попапа формы
         function showSuccessPopup() {
             const popup = document.getElementById('successPopup');
             popup.classList.remove('hidden');
@@ -692,46 +913,6 @@
             popup.classList.add('hidden');
         }
 
-        // Обработка формы с AJAX
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-
-            // Показываем индикатор загрузки
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Отправка...';
-            submitBtn.disabled = true;
-
-            const formData = new FormData(this);
-
-            fetch('/video/submit', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => {
-                    if (response.ok) {
-                        // Показываем красивый попап УСПЕХА
-                        showSuccessPopup();
-                        // Сбрасываем форму
-                        this.reset();
-                    } else {
-                        // Показываем попап ОШИБКИ
-                        showErrorPopup();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    // Показываем попап ОШИБКИ
-                    showErrorPopup();
-                })
-                .finally(() => {
-                    // Восстанавливаем кнопку
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
-                });
-        });
-
         // Закрытие попапов по клику на фон
         document.getElementById('successPopup').addEventListener('click', function(e) {
             if (e.target === this) {
@@ -750,6 +931,12 @@
             if (e.key === 'Escape') {
                 closeSuccessPopup();
                 closeErrorPopup();
+
+                // Также закрываем видеопопап если он открыт
+                const videoPopup = document.getElementById('videoPopup');
+                if (!videoPopup.classList.contains('hidden')) {
+                    closeVideoPopup();
+                }
             }
         });
     </script>

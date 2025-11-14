@@ -1,0 +1,27 @@
+User-agent: *
+Allow: /
+
+# Основные директории
+Disallow: /admin/
+Disallow: /app/
+Disallow: /config/
+Disallow: /temp/
+
+# Файлы
+Disallow: /debug.log
+Disallow: /composer.json
+Disallow: /composer.lock
+
+# Карта сайта
+Sitemap: https://медиа.трислав.рф/sitemap.xml
+Sitemap: https://трислав.рф/sitemap.xml
+
+# Для Яндекс
+User-agent: Yandex
+Allow: /
+Clean-param: utm_source&utm_medium&utm_campaign /video/stream
+
+# Для Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1

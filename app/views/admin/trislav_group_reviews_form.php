@@ -54,7 +54,7 @@ $isEdit = isset($item) && $item;
                         include $componentPath;
                     } else {
                         // Fallback если компонент не найден
-                        debug_log("Компонент file_upload.php не найден по пути: " . $componentPath);
+                        
                         ?>
                         <label class="block text-light font-semibold mb-3">Аватар автора</label>
                         <input type="file" name="author_avatar_file" accept="image/*"

@@ -119,7 +119,6 @@ class AdminBaseController extends Controller {
      * Ручная очистка кэша из админки
      */
     protected function clearCacheManually($type = 'all') {
-        debug_log("AdminBaseController: Manual cache clearance requested for " . $type);
 
         $cleared = 0;
         switch ($type) {
@@ -141,7 +140,6 @@ class AdminBaseController extends Controller {
         }
 
         $this->setFlashMessage('success', "Кэш очищен ($cleared файлов)");
-        debug_log("AdminBaseController: Manual cache clearance completed for " . $type);
     }
 }
 ?>
